@@ -1,2 +1,2 @@
 # Laravel-Log-Reader
-A log reader and tools for Laravel
+An easy log reader and management tool for Laravel 4
