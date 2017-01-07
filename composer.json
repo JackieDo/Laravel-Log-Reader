@@ -1,0 +1,28 @@
+{
+    "name": "jackiedo/log-reader",
+    "description": "An easy log reader and management tool for Laravel 4",
+    "keywords": ["reader", "log reader", "log viewer", "log manager", "log", "logs", "laravel"],
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Jackie Do",
+            "email": "anhvudo@gmail.com"
+        }
+    ],
+    "require": {
+        "php": ">=5.4.0",
+        "illuminate/support": "4.2.*"
+    },
+    "require-dev": {
+        "mockery/mockery": "0.9.*"
+    },
+    "autoload": {
+        "classmap": [
+            "src/migrations"
+        ],
+        "psr-0": {
+            "Jackiedo\\LogReader\\": "src/"
+        }
+    },
+    "minimum-stability": "stable"
+}
