@@ -11,9 +11,9 @@ with ease. Using Log Reader is almost exactly like using any Eloquent model.
 # Overview
 Look at one of the following topics to learn more about LaravelShoppingCart
 
-* [Installation](##installation)
-* [Usage](##usage)
-* [Exceptions](##exceptions)
+* [Installation](#installation)
+* [Usage](#usage)
+* [Exceptions](#exceptions)
 
 ## Installation
 
@@ -45,16 +45,16 @@ $ composer update
 ),
 ```
 
-The next step is add the follow line to the section `aliases`:
+- The next step is add the follow line to the section `aliases`:
 
 ```php
 'LogReader' => 'Jackiedo\LogReader\Facades\LogReader',
 ```
 
-And the final step is publish configuration file:
+- And the final step is publish configuration file:
 
 ```shell
-$ php artisan config:publish jackiedo/logreader
+$ php artisan config:publish jackiedo/log-reader
 ```
 
 ## Usage
@@ -72,7 +72,7 @@ functions such as:
     LogReader::get()->filter($closure);
     LogReader::get()->lists('id', 'header');
     LogReader::get()->search();
-    //etc
+    // etc
 
 Now you can loop over your results and display all the log entries:
 
@@ -142,7 +142,7 @@ You can set file name with compatible format string in function 'sprintf' in PHP
     LogReader::filename('*.*')->get(); // Reade entries from all log files
     LogReader::filename('*.log')->get(); // Read entries from all files that has extension is .log
     LogReader::filename('monthly-*.log')->get(); // Read all files that filename started by 'monthly-' and has extension is .log
-    //etc
+    // etc
 
 ##### Getting log entries by level
 
@@ -150,14 +150,14 @@ You can set file name with compatible format string in function 'sprintf' in PHP
     LogReader::level('error', 'debug')->get(); // Only get error and debug entries
     LogReader::level(['error', 'warning'])->get(); // Only get error and warning entries
     LogReader::level(null)->get(); // Get all entries
-    //etc
+    // etc
 
 ##### Getting log entries by special environment
 
     LogReader::environment('local')->get(); // Only get entries for local environment
     LogReader::environment('production')->get(); // Only get entries for production environment
     LogReader::environment(null)->get(); // Get all entries for all environment
-    //etc
+    // etc
 
 ##### Finding a log entry:
 
