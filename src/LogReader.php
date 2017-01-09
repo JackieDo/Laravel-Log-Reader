@@ -1,9 +1,9 @@
 <?php namespace Jackiedo\LogReader;
 
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Input;
-use Illuminate\Support\Facades\Paginator;
 use Jackiedo\LogReader\Contracts\Levelable;
 use Jackiedo\LogReader\Contracts\Patternable;
 use Jackiedo\LogReader\Entities\LogEntry;
@@ -545,7 +545,7 @@ class LogReader
 
         $entries = $entries->slice($offset, $perPage, true)->all();
 
-        return Paginator::make($entries, $total, $perPage);
+        return new LengthAwarePaginator($entries, $total, $perPage);
     }
 
     /**
