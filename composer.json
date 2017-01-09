@@ -1,0 +1,22 @@
+{
+    "name": "jackiedo/log-reader",
+    "description": "An easy log reader and management tool for Laravel",
+    "keywords": ["reader", "log reader", "log viewer", "log manager", "log", "logs", "laravel"],
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Jackie Do",
+            "email": "anhvudo@gmail.com"
+        }
+    ],
+    "require": {
+        "php": ">=5.6.4",
+        "illuminate/support": "5.3.*"
+    },
+    "autoload": {
+        "psr-4": {
+            "Jackiedo\\LogReader\\": "src/"
+        }
+    },
+    "minimum-stability": "stable"
+}
