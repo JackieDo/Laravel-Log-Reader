@@ -5,7 +5,7 @@
 
 # Description
 
-Laravel Log Reader is an easy log reader and management tool for Laravel 4.2. You're able to view, manage, and modify log entries
+Laravel Log Reader is an easy log reader and management tool for Laravel. You're able to view, manage, and modify log entries
 with ease. Using Laravel Log Reader is almost exactly like using any Eloquent model.
 
 # Overview
@@ -18,7 +18,14 @@ Look at one of the following topics to learn more about Laravel Log Reader
 
 ## Versions and compatibility
 
-Currently, only version for Laravel 4.2 is built. The versions for Laravel 5+ is coming soon.
+Currently, there are some branches of Laravel Log Reader is compatible with the following version of Laravel framework
+
+| Branch                                                                             | Laravel version  |
+| ---------------------------------------------------------------------------------- | ---------------- |
+| [version-1.x](https://github.com/JackieDo/Laravel-Log-Reader/tree/version-1.x)     | 4.2              |
+| [version-2.x](https://github.com/JackieDo/Laravel-Log-Reader/tree/version-2.x)     | 5.3              |
+
+This documentation is use for Laravel 4.2
 
 ## Installation
 
@@ -135,6 +142,10 @@ One log entry has the following attributes:
 Those attributes are reformatted information of log entries through parsing from log file. If you want to get orginal attribute information, you can use method `getOriginal($attribute)`. Example:
 
     $entry->getOriginal('stack'); // Return stack trace string
+
+#### Counting total log entries
+
+    LogReader::count();
 
 #### Getting log entries from special log filename
 

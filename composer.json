@@ -1,6 +1,6 @@
 {
     "name": "jackiedo/log-reader",
-    "description": "An easy log reader and management tool for Laravel 4",
+    "description": "An easy log reader and management tool for Laravel 4.2",
     "keywords": ["reader", "log reader", "log viewer", "log manager", "log", "logs", "laravel"],
     "license": "MIT",
     "authors": [
