@@ -1,9 +1,9 @@
 <?php namespace Jackiedo\LogReader;
 
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Input;
-use Illuminate\Support\Facades\Paginator;
 use Jackiedo\LogReader\Contracts\Levelable;
 use Jackiedo\LogReader\Contracts\Patternable;
 use Jackiedo\LogReader\Entities\LogEntry;
@@ -97,12 +97,12 @@ class LogReader
         $this->patternable = new Patternable;
         $this->levelable = new Levelable;
 
-        $this->setLogPath(Config::get('log-reader::path', storage_path('logs')));
-        $this->setLogFilename(Config::get('log-reader::filename', 'laravel.log'));
-        $this->setEnvironment(Config::get('log-reader::environment'));
-        $this->setLevel(Config::get('log-reader::level'));
-        $this->setOrderByField(Config::get('log-reader::order_by_field', ''));
-        $this->setOrderByDirection(Config::get('log-reader::order_by_direction', ''));
+        $this->setLogPath(Config::get('log-reader.path', storage_path('logs')));
+        $this->setLogFilename(Config::get('log-reader.filename', 'laravel.log'));
+        $this->setEnvironment(Config::get('log-reader.environment'));
+        $this->setLevel(Config::get('log-reader.level'));
+        $this->setOrderByField(Config::get('log-reader.order_by_field', ''));
+        $this->setOrderByDirection(Config::get('log-reader.order_by_direction', ''));
     }
 
     /**
@@ -545,7 +545,7 @@ class LogReader
 
         $entries = $entries->slice($offset, $perPage, true)->all();
 
-        return Paginator::make($entries, $total, $perPage);
+        return new LengthAwarePaginator($entries, $total, $perPage);
     }
 
     /**
@@ -589,9 +589,7 @@ class LogReader
             if (property_exists($entry, $field)) {
                 return $entry->{$field};
             }
-        }, SORT_NATURAL, $desc);
-
-        $sorted->values()->all();
+        }, SORT_NATURAL, $desc)->values()->all();
 
         return $sorted;
     }
