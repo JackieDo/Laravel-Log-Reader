@@ -47,7 +47,7 @@ You can install this package through [Composer](https://getcomposer.org).
 $ composer update
 ```
 
-- Once update operation completes, the third step is add the service provider. Open `app/config/app.php`, and add a new item to the providers array:
+- Once update operation completes, the third step is add the service provider. Open `config/app.php`, and add a new item to the providers array:
 
 ```php
 ...
@@ -57,7 +57,7 @@ $ composer update
 ),
 ```
 
-- The next step is add the follow line to the section `aliases`:
+- The next step is add the follow line to the section `aliases` in file `config/app.php`:
 
 ```php
 'LogReader' => Jackiedo\LogReader\Facades\LogReader::class,
@@ -68,6 +68,8 @@ $ composer update
 ```shell
 $ php artisan vendor:publish --provider="Jackiedo\LogReader\LogReaderServiceProvider" --tag="config"
 ```
+
+After that, you can set configuration for Laravel Log Reader with file `config/log-reader.php`
 
 ## Usage
 

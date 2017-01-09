@@ -97,12 +97,12 @@ class LogReader
         $this->patternable = new Patternable;
         $this->levelable = new Levelable;
 
-        $this->setLogPath(Config::get('log-reader::path', storage_path('logs')));
-        $this->setLogFilename(Config::get('log-reader::filename', 'laravel.log'));
-        $this->setEnvironment(Config::get('log-reader::environment'));
-        $this->setLevel(Config::get('log-reader::level'));
-        $this->setOrderByField(Config::get('log-reader::order_by_field', ''));
-        $this->setOrderByDirection(Config::get('log-reader::order_by_direction', ''));
+        $this->setLogPath(Config::get('log-reader.path', storage_path('logs')));
+        $this->setLogFilename(Config::get('log-reader.filename', 'laravel.log'));
+        $this->setEnvironment(Config::get('log-reader.environment'));
+        $this->setLevel(Config::get('log-reader.level'));
+        $this->setOrderByField(Config::get('log-reader.order_by_field', ''));
+        $this->setOrderByDirection(Config::get('log-reader.order_by_direction', ''));
     }
 
     /**
