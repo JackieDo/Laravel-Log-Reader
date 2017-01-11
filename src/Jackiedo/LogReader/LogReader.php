@@ -589,7 +589,7 @@ class LogReader
             if (property_exists($entry, $field)) {
                 return $entry->{$field};
             }
-        }, SORT_NATURAL, $desc)->values()->all();
+        }, SORT_NATURAL, $desc);
 
         return $sorted;
     }
