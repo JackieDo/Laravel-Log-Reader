@@ -23,7 +23,7 @@ Currently, there are some branches of Laravel Log Reader is compatible with the 
 | Branch                                                                             | Laravel version  |
 | ---------------------------------------------------------------------------------- | ---------------- |
 | [version-1.x](https://github.com/JackieDo/Laravel-Log-Reader/tree/version-1.x)     | 4.2              |
-| [version-2.x](https://github.com/JackieDo/Laravel-Log-Reader/tree/version-2.x)     | 5.3              |
+| [version-2.x](https://github.com/JackieDo/Laravel-Log-Reader/tree/version-2.x)     | 5.*              |
 
 This documentation is use for Laravel 5.3
 
