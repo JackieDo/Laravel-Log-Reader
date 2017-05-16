@@ -214,7 +214,8 @@ class LogReader
      *
      * @return object Jackiedo\LogReader\Contracts\Patternable
      */
-    public function getPatternable() {
+    public function getPatternable()
+    {
         return $this->patternable;
     }
 
@@ -222,7 +223,8 @@ class LogReader
      * Get instance of Levelable
      * @return object Jackiedo\LogReader\Contracts\Levelable
      */
-    public function getLevelable() {
+    public function getLevelable()
+    {
         return $this->levelable;
     }
 
@@ -441,7 +443,8 @@ class LogReader
      *
      * @return int
      */
-    public function count() {
+    public function count()
+    {
         return $this->get()->count();
     }
 
@@ -630,7 +633,9 @@ class LogReader
 
         preg_match_all($pattern, $content, $headings);
 
-        if (!is_array($headings)) return $log;
+        if (!is_array($headings)) {
+            return $log;
+        }
         list($headerList, $dateList, $envList, $levelList) = $headings;
 
         $stackList = preg_split($pattern, $content);
@@ -747,7 +752,8 @@ class LogReader
      *
      * @return array
      */
-    public function getLogFilenameList($filename = null) {
+    public function getLogFilenameList($filename = null)
+    {
         $data = [];
         if (empty($filename)) {
             $filename = '*.*';

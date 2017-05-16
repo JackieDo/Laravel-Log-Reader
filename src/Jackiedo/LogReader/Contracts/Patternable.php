@@ -19,7 +19,8 @@ class Patternable
      *
      * @return regex
      */
-    public function getHeaderPattern() {
+    public function getHeaderPattern()
+    {
         return "/\[(" .self::HEADER_DATE. ")\]\s(" .self::HEADER_ENVIRONMENT. ")\.(" .self::HEADER_LEVEL. ")\:\s.*|\nNext\s.*/";
     }
 }
