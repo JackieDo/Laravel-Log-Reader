@@ -31,8 +31,9 @@ class Levelable
      *
      * @return array
      */
-    public function getAcceptedLevels() {
-    	return $this->levels;
+    public function getAcceptedLevels()
+    {
+        return $this->levels;
     }
 
     /**
@@ -43,18 +44,19 @@ class Levelable
      *
      * @return bool
      */
-    public function filter($level, $allowed) {
-    	if (empty($allowed)) {
-    		return true;
-    	}
+    public function filter($level, $allowed)
+    {
+        if (empty($allowed)) {
+            return true;
+        }
 
-    	if (is_array($allowed)) {
-    		$merges = array_values(array_uintersect($this->levels, $allowed, "strcasecmp"));
-			if (in_array(strtolower($level), $merges)) {
-	    		return true;
-	    	}
-    	}
+        if (is_array($allowed)) {
+            $merges = array_values(array_uintersect($this->levels, $allowed, "strcasecmp"));
+            if (in_array(strtolower($level), $merges)) {
+                return true;
+            }
+        }
 
-    	return false;
+        return false;
     }
 }
