@@ -31,15 +31,13 @@ class LogReaderServiceProvider extends ServiceProvider
          * Publishing package's config
          */
         $packageConfigPath = __DIR__ . '/../../config/config.php';
-        $config            = config_path('log-reader.php');
+        $appconfigPath     = config_path('log-reader.php');
+
+        $this->mergeConfigFrom($packageConfigPath, 'log-reader');
 
         $this->publishes([
-            $packageConfigPath => $config,
+            $packageConfigPath => $appconfigPath,
         ], 'config');
-
-        if (file_exists($config)) {
-            $this->mergeConfigFrom($packageConfigPath, 'log-reader');
-        }
     }
 
     /**
