@@ -1,7 +1,7 @@
 {
     "name": "jackiedo/log-reader",
     "description": "An easy log reader and management tool for Laravel 4.2",
-    "keywords": ["reader", "log reader", "log viewer", "log manager", "log", "logs", "laravel"],
+    "keywords": ["log", "logs", "reader", "viewer", "log-reader", "log-viewer", "log-manager", "laravel"],
     "license": "MIT",
     "authors": [
         {
@@ -11,6 +11,9 @@
     ],
     "require": {
         "php": ">=5.4.0",
+        "illuminate/cache": "4.2.*",
+        "illuminate/config": "4.2.*",
+        "illuminate/request": "4.2.*",
         "illuminate/support": "4.2.*"
     },
     "autoload": {
