@@ -10,4 +10,5 @@
  */
 class UnableToRetrieveLogFilesException extends \Exception
 {
+    //
 }
