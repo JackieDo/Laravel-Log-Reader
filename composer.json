@@ -14,7 +14,8 @@
         "illuminate/cache": "4.2.*",
         "illuminate/config": "4.2.*",
         "illuminate/http": "4.2.*",
-        "illuminate/support": "4.2.*"
+        "illuminate/support": "4.2.*",
+        "nesbot/carbon": "~1.0"
     },
     "autoload": {
         "psr-0": {
