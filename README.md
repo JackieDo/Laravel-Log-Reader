@@ -1,12 +1,10 @@
+# Laravel Log Reader
 [![Latest Stable Version](https://poser.pugx.org/jackiedo/log-reader/v/stable)](https://packagist.org/packages/jackiedo/log-reader)
 [![Total Downloads](https://poser.pugx.org/jackiedo/log-reader/downloads)](https://packagist.org/packages/jackiedo/log-reader)
 [![Latest Unstable Version](https://poser.pugx.org/jackiedo/log-reader/v/unstable)](https://packagist.org/packages/jackiedo/log-reader)
 [![License](https://poser.pugx.org/jackiedo/log-reader/license)](https://packagist.org/packages/jackiedo/log-reader)
 
-# Description
-
-Laravel Log Reader is an easy log reader and management tool for Laravel. You're able to view, manage, and modify log entries
-with ease. Using Laravel Log Reader is almost exactly like using any Eloquent model.
+Laravel Log Reader is an easy log reader and management tool for Laravel. You can easily view, manage, and modify the log entries. Using Laravel Log Reader is almost identical to using any Eloquent model.
 
 # Overview
 Look at one of the following topics to learn more about Laravel Log Reader
@@ -14,21 +12,41 @@ Look at one of the following topics to learn more about Laravel Log Reader
 * [Versions and compatibility](#versions-and-compatibility)
 * [Installation](#installation)
 * [Usage](#usage)
-* [Exceptions](#exceptions)
+    - [The LogReader facade](#the-logreader-facade)
+    - [Getting all the log entries](#getting-all-the-log-entries)
+    - [The log entry's attributes](#the-log-entrys-attributes)
+    - [Getting original attributes of the log entry](#getting-original-attributes-of-the-log-entry)
+    - [Counting total log entries](#counting-total-log-entries)
+    - [Getting log entries from a special log file](#getting-log-entries-from-a-special-log-file)
+    - [Getting all log filename list that you have](#getting-all-log-filename-list-that-you-have)
+    - [Getting log entries by level](#getting-log-entries-by-level)
+    - [Getting log entries by special environment](#getting-log-entries-by-special-environment)
+    - [Finding a log entry](#finding-a-log-entry)
+    - [Marking an entry as read](#marking-an-entry-as-read)
+    - [Marking all entries as read](#marking-all-entries-as-read)
+    - [Including read entries in your request](#including-read-entries-in-your-request)
+    - [Deleting a log entry](#deleting-a-log-entry)
+    - [Deleting all log entries](#deleting-all-log-entries)
+    - [Removing the log file](#removing-the-log-file)
+    - [Ordering result of your get log entries request](#ordering-result-of-your-get-log-entries-request)
+    - [Paginating result of your get log entries request](#paginating-result-of-your-get-log-entries-request)
+    - [Setting your own log path](#setting-your-own-log-path)
+    - [Dependency injection](#dependency-injection)
+    - [Exceptions](#exceptions)
+* [License](#license)
+* [Thanks from author](#thanks-for-use)
 
 ## Versions and compatibility
+Currently, there are two branches of Laravel Log Reader is compatible with the following version of Laravel framework:
 
-Currently, there are some branches of Laravel Log Reader is compatible with the following version of Laravel framework
+| Branch                                                                 | Laravel version  |
+| ---------------------------------------------------------------------- | ---------------- |
+| [1.x](https://github.com/JackieDo/Laravel-Log-Reader/tree/version-1.x) | 4.2              |
+| [2.x](https://github.com/JackieDo/Laravel-Log-Reader/tree/version-2.x) | 5.*              |
 
-| Branch                                                                             | Laravel version  |
-| ---------------------------------------------------------------------------------- | ---------------- |
-| [version-1.x](https://github.com/JackieDo/Laravel-Log-Reader/tree/version-1.x)     | 4.2              |
-| [version-2.x](https://github.com/JackieDo/Laravel-Log-Reader/tree/version-2.x)     | 5.*              |
-
-This documentation is use for Laravel 5.3
+This documentation is use for Laravel 5+. If you want to use on Laravel 4.2, please read at [here](https://github.com/JackieDo/Laravel-Log-Reader/tree/version-1.x)
 
 ## Installation
-
 You can install this package through [Composer](https://getcomposer.org).
 
 - First, edit your project's `composer.json` file to require `jackiedo/log-reader`:
@@ -41,13 +59,13 @@ You can install this package through [Composer](https://getcomposer.org).
 },
 ```
 
-- Next, update Composer from the Terminal on your project source:
+- Next, run the composer update command in your command line interface:
 
 ```shell
 $ composer update
 ```
 
-- Once update operation completes, the third step is add the service provider. Open `config/app.php`, and add a new item to the providers array:
+- Once update operation completes, the third step is add the service provider. Open `config/app.php`, and add a new line to the providers array:
 
 ```php
 ...
@@ -63,6 +81,8 @@ $ composer update
 'LogReader' => Jackiedo\LogReader\Facades\LogReader::class,
 ```
 
+> **Note:** Instead of performing the above two steps, you can perform faster with the `$ composer require jackiedo/log-reader:2.*` command in your command line interface.
+
 - And the final step is publish configuration file:
 
 ```shell
@@ -73,12 +93,15 @@ After that, you can set configuration for Laravel Log Reader with file `config/l
 
 ## Usage
 
-#### Getting all the log entries, use:
+### The LogReader facade
+Laravel Log Reader has a facade with name is `Jackiedo\LogReader\Facades\LogReader`. You can do any operation with Log Reader through this facade.
+
+### Getting all the log entries
 
     LogReader::get();
 
-A laravel collection is returned with all of the entries. This means your able to use all of Laravels handy collection
-functions such as:
+A Laravel collection is returned with all of the log entries. This means you can use all Laravels handy collection
+functions, such as:
 
     LogReader::get()->first();
     LogReader::get()->filter($closure);
@@ -90,13 +113,11 @@ Now you can loop over your results and display all the log entries:
 
     $entries = LogReader::get();
 
-    foreach ($entries as $entry)
-    {
+    foreach ($entries as $entry) {
         returns $entry->header; // Returns the entry header
     }
 
-#### Log entry's attributes
-
+### The log entry's attributes
 One log entry has the following attributes:
 
     /**
@@ -141,41 +162,44 @@ One log entry has the following attributes:
      */
     public $filePath;
 
-Those attributes are reformatted information of log entries through parsing from log file. If you want to get orginal attribute information, you can use method `getOriginal($attribute)`. Example:
+### Getting original attributes of the log entry
+All attributes of a log entry are reformatted informations through parsing from log file. If you want to get orginal attribute information, you can use the `getOriginal($attribute)` method. Example:
 
-    $entry->getOriginal('stack'); // Return stack trace string
+    $entries = LogReader::get();
 
-#### Counting total log entries
+    foreach ($entries as $entry) {
+        $entry->getOriginal('stack'); // Return stack trace string
+    }
+
+### Counting total log entries
 
     LogReader::count();
 
-#### Getting log entries from special log filename
-
+### Getting log entries from a special log file
 By default, Laravel Log Reader will read all log entries from special log files that you specified in configuration file. You can set filename of log files that you want to read from by:
 
-    LogReader::filename('laravel.log');
-    $entries = LogReader::get();
+    $log = LogReader::filename('laravel.log');
+    $entries = $log->get();
 
-    // Chaining example
-    LogReader::filename('laravel.log')->get();
+    // Use with chaining method
+    $entries = LogReader::filename('laravel.log')->get();
 
-You can set filename with compatible format string in function `sprintf()` in PHP. Example:
+You can pass the filename parameter with compatible format string as in function `sprintf()`. Example:
 
-    LogReader::filename('*.*')->get();              // Reade entries from all log files
-    LogReader::filename('*.log')->get();            // Read entries from all files that has extension is .log
-    LogReader::filename('monthly-*.log')->get();    // Read all files that filename started by 'monthly-' and has extension is .log
+    LogReader::filename('*.*')->get();            // Reade entries from all log files
+    LogReader::filename('*.log')->get();          // Read entries from all files that has extension is .log
+    LogReader::filename('monthly-*.log')->get();  // Read all files that filename started by 'monthly-' and has extension is .log
     // etc
 
-Note: If you set filename is `null`, Laravel Log Reader will read all log files
+Note: If you pass the filename parameter with `null` value, Laravel Log Reader will read all log files.
 
-#### Getting all log filename list that you have
-
-Sometime, you want to have a list of your log files. This can be done easily through method `getLogFilenameList($filename = null)`. Example:
+### Getting all log filename list that you have
+Sometime, you want to get list of all your log files. This can be done easily through the `getLogFilenameList($filename)` method. Example:
 
     $files = LogReader::getLogFilenameList();
     $otherList = LogReader::getLogFilenameList('monthly-*.log');
 
-#### Getting log entries by level
+### Getting log entries by level
 
     LogReader::level('error')->get();               // Only get error entries
     LogReader::level('error', 'debug')->get();      // Only get error and debug entries
@@ -183,32 +207,32 @@ Sometime, you want to have a list of your log files. This can be done easily thr
     LogReader::level(null)->get();                  // Get all entries
     // etc
 
-#### Getting log entries by special environment
+### Getting log entries by special environment
 
     LogReader::environment('local')->get();         // Only get entries for local environment
     LogReader::environment('production')->get();    // Only get entries for production environment
     LogReader::environment(null)->get();            // Get all entries for all environment
     // etc
 
-#### Finding a log entry:
+### Finding a log entry
 
     LogReader::find($id);
 
-#### Marking an entry as read:
+### Marking an entry as read
 
     LogReader::find($id)->markRead();
 
-This will cache the entry, and exclude it from any future results.
+This will cache this entry, and exclude it from any get log results in future.
 
-#### Marking all entries as read:
+### Marking all entries as read
 
     $marked = LogReader::markRead();
 
-    return $marked; // Returns integer of how many entries were marked
+    return $marked;  // Returns the integer of how many entries were marked
 
 This will cache all the entries and exclude them from future results.
 
-#### Including read entries in your results:
+### Including read entries in your request
 
     LogReader::includeRead()->get();
 
@@ -216,58 +240,64 @@ This will cache all the entries and exclude them from future results.
 
     // etc.
 
-#### Deleting a log entry:
+### Deleting a log entry
 
     LogReader::find($id)->delete();
 
-    // Or if you've marked the entry as read
+    // Or if you've marked this entry as read
     LogReader::includeRead()->find($id)->delete();
 
 This will remove the entire entry from the log file, but keep all other entries in-tack.
 
-
-#### Deleting all log entries:
+### Deleting all log entries
 
     $deleted = LogReader::delete();
 
-    return $deleted; // Returns integer of how many entries were deleted
+    return $deleted;  // Returns the integer of how many entries were deleted
 
     // Or delete entries in special log filename
     $deleted = LogReader::filename('special.log')->delete();
 
 This will remove all entries in all log files. It will not delete the files however.
 
-#### Remove all log file:
+### Removing the log file
 
+    // Remove special all log files
     $removed = LogReader::removeLogFile();
-
     return $removed; // Returns integer of how many file were deleted
 
-    // Or remove special log filename
+    // Or remove special log file
     $removed = LogReader::filename('special.log')->removeLogFile();
 
 This will delete log files. It also delete all entries in file, of course.
 
-#### Ordering
-
-You can easily order your results as well using `orderBy($field, $direction = 'desc')`:
+### Ordering result of your get log entries request
+You can easily order your results as well using the `orderBy($field[, $direction = 'desc'])` method:
 
     LogReader::orderBy('level')->get();
     LogReader::orderBy('date', 'asc')->get();
 
-#### Paginate your results
+### Paginating result of your get log entries request
 
     LogReader::paginate(25);
 
 This returns a regular Laravel pagination object. You can use it how you'd typically use it on any eloquent model:
 
-    // In your controller
+    /*
+    |----------------------------------
+    | In your controller
+    |----------------------------------
+    */
 
     $entries = LogReader::paginate(25);
 
     return View::make('logs', compact('entries'));
 
-    // In your view
+    /*
+    |----------------------------------
+    | In your view
+    |----------------------------------
+    */
 
     @foreach ($entries as $entry)
         {{ $entry->id }}
@@ -279,20 +309,46 @@ You can also combine functions with the pagination like so:
 
     $entries = LogReader::level('error')->paginate(25);
 
-#### Setting your own log path
-
-By default LogReader uses the laravel helper `storage_path('logs')` as the log directory. If you need this changed just
+### Setting your own log path
+By default, Laravel Log Reader uses the laravel helper `storage_path('logs')` as the log directory. If you need this changed just
 set a different path using:
 
     LogReader::setLogPath('logs');
 
-## Exceptions
+### Dependency injection
+From now and then, it's possibly to use dependency injection to inject an instance of the LogReader class into your controller or other class. Example:
 
-#### UnableToRetrieveLogFilesException
+    <?php namespace App\Http\Controllers;
 
+    use App\Http\Controllers\Controller;
+    use App\Http\Requests;
+    use App\Product;
+    use Illuminate\Http\Request;
+    use Jackiedo\LogReader\LogReader;
+
+    class TestLogReaderController extends Controller {
+
+        protected $reader;
+
+        public function __construct(LogReader $reader)
+        {
+            $this->reader = $reader;
+        }
+
+        public function index()
+        {
+            $reader = $this->reader->get();
+        }
+    }
+
+### Exceptions
 If you've set your log path manually and log files do not exist in the given directory, you will receive
-an `UnableToRetrieveLogFilesException` (full namespace is `Jackiedo\LogReader\Exceptions\UnableToRetrieveLogFilesException`).
+an `UnableToRetrieveLogFilesException` (full namespace is `Jackiedo\LogReader\Exceptions\UnableToRetrieveLogFilesException`). For example:
 
-For example:
+    LogReader::setLogPath('testing')->get();  // Throws UnableToRetrieveLogFilesException
 
-    LogReader::setLogPath('testing')->get(); // Throws UnableToRetrieveLogFilesException
+## License
+[MIT](LICENSE) © Jackie Do
+
+## Thanks for use
+Hopefully, this package is useful to you.

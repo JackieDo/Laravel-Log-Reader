@@ -47,9 +47,7 @@ class LogReaderServiceProvider extends ServiceProvider
      */
     public function register()
     {
-        $this->app->singleton('log-reader', function ($app) {
-            return new LogReader;
-        });
+        $this->app->bind('log-reader', 'Jackiedo\LogReader\LogReader');
     }
 
     /**

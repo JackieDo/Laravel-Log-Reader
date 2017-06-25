@@ -1,7 +1,7 @@
 <?php namespace Jackiedo\LogReader\Entities;
 
 use Carbon\Carbon;
-use Illuminate\Support\Facades\Cache;
+use Illuminate\Contracts\Cache\Repository as Cache;
 
 /**
  * LogEntry
@@ -13,6 +13,13 @@ use Illuminate\Support\Facades\Cache;
  */
 class LogEntry
 {
+    /**
+     * Store instance of Cache Repository for caching
+     *
+     * @var object
+     */
+    protected $cache;
+
     /**
      * The entry's ID.
      *
@@ -72,12 +79,14 @@ class LogEntry
     /**
      * Constructs a new entry object with the specified attributes.
      *
+     * @param Cache $cache
      * @param array $attributes
      */
-    public function __construct($attributes = [])
+    public function __construct(Cache $cache, $attributes = [])
     {
-        $this->setAttributes($attributes);
+        $this->cache = $cache;
 
+        $this->setAttributes($attributes);
         $this->assignAttributes();
     }
 
@@ -89,7 +98,7 @@ class LogEntry
      */
     public function markRead()
     {
-        return Cache::rememberForever($this->makeCacheKey(), function () {
+        return $this->cache->rememberForever($this->makeCacheKey(), function () {
             return $this;
         });
     }
@@ -102,7 +111,7 @@ class LogEntry
      */
     public function isRead()
     {
-        if (Cache::has($this->makeCacheKey())) {
+        if ($this->cache->has($this->makeCacheKey())) {
             return true;
         }
 

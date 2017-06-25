@@ -1,9 +1,10 @@
 <?php namespace Jackiedo\LogReader;
 
+use Illuminate\Contracts\Cache\Repository as Cache;
+use Illuminate\Contracts\Config\Repository as Config;
+use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Config;
-use Illuminate\Support\Facades\Input;
 use Jackiedo\LogReader\Contracts\Levelable;
 use Jackiedo\LogReader\Contracts\Patternable;
 use Jackiedo\LogReader\Entities\LogEntry;
@@ -19,6 +20,27 @@ use Jackiedo\LogReader\Exceptions\UnableToRetrieveLogFilesException;
  */
 class LogReader
 {
+    /**
+     * Store instance of Cache Repository for caching
+     *
+     * @var object
+     */
+    protected $cache;
+
+    /**
+     * Store instance of Config Repository for working with config
+     *
+     * @var object
+     */
+    protected $config;
+
+    /**
+     * Store instance of Request for getting request input
+     *
+     * @var object
+     */
+    protected $request;
+
     /**
      * Store instance of Patternable for parsing log file
      * @var object
@@ -91,18 +113,26 @@ class LogReader
 
     /**
      * Construct a new instance and set attributes.
+     *
+     * @param Cache   $cache
+     * @param Config  $config
+     * @param Request $request
      */
-    public function __construct()
+    public function __construct(Cache $cache, Config $config, Request $request)
     {
-        $this->patternable = new Patternable;
-        $this->levelable = new Levelable;
+        $this->cache   = $cache;
+        $this->config  = $config;
+        $this->request = $request;
 
-        $this->setLogPath(Config::get('log-reader.path', storage_path('logs')));
-        $this->setLogFilename(Config::get('log-reader.filename', 'laravel.log'));
-        $this->setEnvironment(Config::get('log-reader.environment'));
-        $this->setLevel(Config::get('log-reader.level'));
-        $this->setOrderByField(Config::get('log-reader.order_by_field', ''));
-        $this->setOrderByDirection(Config::get('log-reader.order_by_direction', ''));
+        $this->patternable = new Patternable;
+        $this->levelable   = new Levelable;
+
+        $this->setLogPath($this->config->get('log-reader.path', storage_path('logs')));
+        $this->setLogFilename($this->config->get('log-reader.filename', 'laravel.log'));
+        $this->setEnvironment($this->config->get('log-reader.environment'));
+        $this->setLevel($this->config->get('log-reader.level'));
+        $this->setOrderByField($this->config->get('log-reader.order_by_field', ''));
+        $this->setOrderByDirection($this->config->get('log-reader.order_by_direction', ''));
     }
 
     /**
@@ -410,7 +440,7 @@ class LogReader
                  * Create a new LogEntry object for each parsed log entry
                  */
                 foreach ($parsedLog as $entry) {
-                    $newEntry = new LogEntry($entry);
+                    $newEntry = new LogEntry($this->cache, $entry);
 
                     /*
                      * Check if the entry has already been read,
@@ -605,7 +635,7 @@ class LogReader
      */
     private function getPageFromInput()
     {
-        $page = Input::get('page');
+        $page = $this->request->input('page');
 
         if (is_numeric($page)) {
             return intval($page);
