@@ -28,6 +28,8 @@ Look at one of the following topics to learn more about Laravel Log Reader
     - [Deleting a log entry](#deleting-a-log-entry)
     - [Deleting all log entries](#deleting-all-log-entries)
     - [Removing the log file](#removing-the-log-file)
+    - [Ordering result of your get log entries request](#ordering-result-of-your-get-log-entries-request)
+    - [Paginating result of your get log entries request](#paginating-result-of-your-get-log-entries-request)
     - [Setting your own log path](#setting-your-own-log-path)
     - [Dependency injection](#dependency-injection)
     - [Exceptions](#exceptions)
@@ -269,11 +271,13 @@ This will remove all entries in all log files. It will not delete the files howe
 
 This will delete log files. It also delete all entries in file, of course.
 
+### Ordering result of your get log entries request
 You can easily order your results as well using the `orderBy($field[, $direction = 'desc'])` method:
 
     LogReader::orderBy('level')->get();
     LogReader::orderBy('date', 'asc')->get();
 
+### Paginating result of your get log entries request
 
     LogReader::paginate(25);
 
