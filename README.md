@@ -67,6 +67,8 @@ You can install this package through [Composer](https://getcomposer.org).
 $ composer update
 ```
 
+> **Note:** Instead of performing the above two steps, you can perform faster with the `$ composer require jackiedo/log-reader:2.*` command in your command line interface.
+
 - Once update operation completes, the third step is add the service provider. Open `config/app.php`, and add a new line to the providers array:
 
 ```php
@@ -82,8 +84,6 @@ $ composer update
 ```php
 'LogReader' => Jackiedo\LogReader\Facades\LogReader::class,
 ```
-
-> **Note:** Instead of performing the above two steps, you can perform faster with the `$ composer require jackiedo/log-reader:2.*` command in your command line interface.
 
 - And the final step is publish configuration file:
 
@@ -389,7 +389,7 @@ You can use it how you'd typically use it on any eloquent model:
 
     $entries = LogReader::paginate(25);
 
-    return View::make('logs', compact('entries'));
+    return view('logs', compact('entries'));
 
     /*
     |----------------------------------
