@@ -3,9 +3,9 @@
 use Illuminate\Support\Facades\Facade;
 
 /**
- * The LogReader facade.
+ * The LogReader class.
  *
- * @package Jackiedo\LogReader\Facades
+ * @package Jackiedo\LogReader
  * @author Jackie Do <anhvudo@gmail.com>
  * @copyright 2017
  * @access public
