@@ -426,7 +426,8 @@ class YourOwnLogParser implements LogParser {
 - Next step, change the parser with the `setLogParser()` method:
 
 ```php
-LogReader::setLogParser('YourNamespace\YourOwnLogParser')->get();
+$parser = new \YourNamespace\YourOwnLogParser;
+LogReader::setLogParser($parser)->get();
 ```
 
 ### Setting your own log path
