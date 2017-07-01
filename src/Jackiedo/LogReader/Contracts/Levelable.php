@@ -1,41 +1,15 @@
 <?php namespace Jackiedo\LogReader\Contracts;
 
 /**
- * Levelable
+ * The Levelable interface.
  *
- * @package Jackiedo\LogReader\Contracts
+ * @package Jackiedo\LogReader
  * @author Jackie Do <anhvudo@gmail.com>
  * @copyright 2017
  * @access public
  */
-class Levelable
+interface Levelable
 {
-    /**
-     * The log accepted levels.
-     *
-     * @var array
-     */
-    protected $levels = [
-        'emergency',
-        'alert',
-        'critical',
-        'error',
-        'warning',
-        'notice',
-        'info',
-        'debug',
-    ];
-
-    /**
-     * Get log accepted levels
-     *
-     * @return array
-     */
-    public function getAcceptedLevels()
-    {
-        return $this->levels;
-    }
-
     /**
      * Filter logs by level
      *
@@ -44,19 +18,5 @@ class Levelable
      *
      * @return bool
      */
-    public function filter($level, $allowed)
-    {
-        if (empty($allowed)) {
-            return true;
-        }
-
-        if (is_array($allowed)) {
-            $merges = array_values(array_uintersect($this->levels, $allowed, "strcasecmp"));
-            if (in_array(strtolower($level), $merges)) {
-                return true;
-            }
-        }
-
-        return false;
-    }
+    public function filter($level, $allowed);
 }
