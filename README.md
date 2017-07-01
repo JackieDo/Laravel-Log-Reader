@@ -16,6 +16,7 @@ Look at one of the following topics to learn more about Laravel Log Reader
     - [Getting all the log entries](#getting-all-the-log-entries)
     - [The log entry's attributes](#the-log-entrys-attributes)
     - [Getting original attributes of the log entry](#getting-original-attributes-of-the-log-entry)
+    - [Getting raw content of the log entry](#getting-raw-content-of-the-log-entry)
     - [Counting total log entries](#counting-total-log-entries)
     - [Getting log entries from a special log file](#getting-log-entries-from-a-special-log-file)
     - [Getting all log filename list that you have](#getting-all-log-filename-list-that-you-have)
@@ -30,6 +31,7 @@ Look at one of the following topics to learn more about Laravel Log Reader
     - [Removing the log file](#removing-the-log-file)
     - [Ordering result of your get log entries request](#ordering-result-of-your-get-log-entries-request)
     - [Paginating result of your get log entries request](#paginating-result-of-your-get-log-entries-request)
+    - [Setting your own log parser](#setting-your-own-log-parser)
     - [Setting your own log path](#setting-your-own-log-path)
     - [Dependency injection](#dependency-injection)
     - [Exceptions](#exceptions)
@@ -65,6 +67,8 @@ You can install this package through [Composer](https://getcomposer.org).
 $ composer update
 ```
 
+> **Note:** Instead of performing the above two steps, you can perform faster with the `$ composer require jackiedo/log-reader:2.*` command in your command line interface.
+
 - Once update operation completes, the third step is add the service provider. Open `config/app.php`, and add a new line to the providers array:
 
 ```php
@@ -80,8 +84,6 @@ $ composer update
 ```php
 'LogReader' => Jackiedo\LogReader\Facades\LogReader::class,
 ```
-
-> **Note:** Instead of performing the above two steps, you can perform faster with the `$ composer require jackiedo/log-reader:2.*` command in your command line interface.
 
 - And the final step is publish configuration file:
 
@@ -100,76 +102,154 @@ Laravel Log Reader has a facade with name is `Jackiedo\LogReader\Facades\LogRead
 
     LogReader::get();
 
-A Laravel collection is returned with all of the log entries. This means you can use all Laravels handy collection
-functions, such as:
+A Laravel collection is returned containing all of the log entries. Example:
+
+    {
+        26c90a5cdcc2d4c50b609d783b1b6355: {
+            id           : "26c90a5cdcc2d4c50b609d783b1b6355",
+            date         : ...,
+            environment  : ...,
+            level        : ...,
+            file_path    : ...,
+            context      : ...,
+            stack_traces : ...
+        },
+        2627bda2c0f4ea7d79e2b15f28b73c36: {
+            id           : "2627bda2c0f4ea7d79e2b15f28b73c36",
+            date         : ...,
+            environment  : ...,
+            level        : ...,
+            file_path    : ...,
+            context      : ...,
+            stack_traces : ...
+        }
+    }
+
+This means you can use all Laravel handy collection functions, such as:
 
     LogReader::get()->first();
     LogReader::get()->filter($closure);
-    LogReader::get()->lists('header', 'id');
+    LogReader::get()->pluck('header', 'id');
     LogReader::get()->search();
     // etc
 
-Now you can loop over your results and display all the log entries:
+Now you can loop over your results and display all the log entries. Example:
 
     $entries = LogReader::get();
 
     foreach ($entries as $entry) {
-        returns $entry->header; // Returns the entry header
+        returns $entry->context; // Returns the log entry context
     }
 
 ### The log entry's attributes
 One log entry has the following attributes:
 
     /**
-     * Returns the entry date such as: 2015-03-19 14:56:08
+     * The Unique ID of the log entry.
      *
-     * @var string Returns unique md5 string such as: fae8205b40bc9d6663db76011931716f
+     * @var string
      */
     public $id;
 
     /**
-     * Returns the level of the entry such as: emergency, alert, critical, error etc.
+     * The date of the log entry.
+     *
+     * @var \Carbon\Carbon
+     */
+    public $date;
+
+    /**
+     * The environment of the log entry.
+     *
+     * @var string
+     */
+    public $environment;
+
+    /**
+     * The level of the log entry.
      *
      * @var string
      */
     public $level;
 
     /**
-     * Returns the entry header string.
+     * The path to the log file containing the log entry.
      *
      * @var string
      */
-    public $header;
+    public $file_path;
 
     /**
-     * Returns the entry date, it's is an instance of Carbon\Carbon
+     * The context of the log entry.
      *
-     * @var object Carbon\Carbon
+     * @var \Jackiedo\LogReader\Entities\LogContext
      */
-    public $date;
+    public $context;
 
     /**
-     * Returns array stacks trace of the error.
+     * The stack trace entries of the log entry.
+     * Each trace entry is an instance of
+     * \Jackiedo\LogReader\Entities\TraceEntry
      *
-     * @var array
+     * @var \Illuminate\Support\Collection
      */
-    public $stack;
+    public $stack_traces;
 
-    /**
-     * Returns the complete file path of log file which contains the error.
-     *
-     * @var string
-     */
-    public $filePath;
+This is an example of the structure that you can obtain from the log entry:
+
+    26c90a5cdcc2d4c50b609d783b1b6355: {
+        id: "26c90a5cdcc2d4c50b609d783b1b6355",
+        date: {
+            date: "2017-06-29 10:18:32.000000",
+            timezone_type: 3,
+            timezone: "UTC"
+        },
+        environment: "local",
+        level: "error",
+        file_path: "D:\www\laravel-jackiedo54\storage\logs\laravel.log",
+        context: {
+            message: "md5() expects parameter 2 to be boolean, array given",
+            exception: "ErrorException",
+            in: "D:\www\laravel-jackiedo54\vendor\jackiedo\log-reader\src\Jackiedo\LogReader\Entities\LogEntry.php",
+            line: "194"
+        },
+        stack_traces: [
+            {
+                caught_at: "Illuminate\Foundation\Bootstrap\HandleExceptions->handleError(2, 'md5() expects p...', 'D:\\www\\laravel-...', 194, Array)",
+                in: "[internal function]",
+                line: null
+            },
+            {
+                caught_at: "md5('|', Array)",
+                in: "D:\www\laravel-jackiedo54\vendor\jackiedo\log-reader\src\Jackiedo\LogReader\Entities\LogEntry.php",
+                line: "194"
+            },
+            {
+                caught_at: "Jackiedo\LogReader\Entities\LogEntry->generateId()",
+                in: "D:\www\laravel-jackiedo54\vendor\jackiedo\log-reader\src\Jackiedo\LogReader\Entities\LogEntry.php",
+                line: "352"
+            },
+            // etc
+        ]
+    },
+
+You can access all attributes of the log entry through its property. Example:
+
+    $logEntry->context->message;
+    $logEntry->date->format('l jS \\of F Y h:i:s A');
+    $logEntry->stack_traces->first()->caught_at;
+    // etc
 
 ### Getting original attributes of the log entry
-All attributes of a log entry are reformatted informations through parsing from log file. If you want to get orginal attribute information, you can use the `getOriginal($attribute)` method. Example:
+All attributes of a log entry are formatted informations through parsing from log file. If you want to get orginal attribute information, you can use the `getOriginal($attribute)` method. Example:
 
-    $entries = LogReader::get();
+    $logEntry->getOriginal('context');      // Return original content string of context
+    $logEntry->getOriginal('stack_traces'); // Return original content string of stack trace
 
-    foreach ($entries as $entry) {
-        $entry->getOriginal('stack'); // Return stack trace string
-    }
+### Getting raw content of the log entry
+You can also get the raw content string of the log entry whenever you want.
+
+    $logEntry->getRawContent();
 
 ### Counting total log entries
 
@@ -220,13 +300,13 @@ Sometime, you want to get list of all your log files. This can be done easily th
 
 ### Marking an entry as read
 
-    LogReader::find($id)->markRead();
+    LogReader::find($id)->markAsRead();
 
 This will cache this entry, and exclude it from any get log results in future.
 
 ### Marking all entries as read
 
-    $marked = LogReader::markRead();
+    $marked = LogReader::markAsRead();
 
     return $marked;  // Returns the integer of how many entries were marked
 
@@ -234,9 +314,9 @@ This will cache all the entries and exclude them from future results.
 
 ### Including read entries in your request
 
-    LogReader::includeRead()->get();
+    LogReader::withRead()->get();
 
-    LogReader::includeRead()->find($id);
+    LogReader::withRead()->find($id);
 
     // etc.
 
@@ -245,7 +325,7 @@ This will cache all the entries and exclude them from future results.
     LogReader::find($id)->delete();
 
     // Or if you've marked this entry as read
-    LogReader::includeRead()->find($id)->delete();
+    LogReader::withRead()->find($id)->delete();
 
 This will remove the entire entry from the log file, but keep all other entries in-tack.
 
@@ -272,16 +352,34 @@ This will remove all entries in all log files. It will not delete the files howe
 This will delete log files. It also delete all entries in file, of course.
 
 ### Ordering result of your get log entries request
-You can easily order your results as well using the `orderBy($field[, $direction = 'desc'])` method:
+You can easily order your results as well using the `orderBy($field[, $direction = 'asc'])` method:
 
     LogReader::orderBy('level')->get();
-    LogReader::orderBy('date', 'asc')->get();
+    LogReader::orderBy('date', 'desc')->get();
 
 ### Paginating result of your get log entries request
 
     LogReader::paginate(25);
 
-This returns a regular Laravel pagination object. You can use it how you'd typically use it on any eloquent model:
+This returns a regular Laravel pagination object. For example:
+
+    {
+        current_page: 1,
+        data: {
+            26c90a5cdcc2d4c50b609d783b1b6355: {...},
+            2627bda2c0f4ea7d79e2b15f28b73c36: {...}
+        },
+        from: 1,
+        last_page: 25,
+        next_page_url: "/?page=2",
+        path: "/",
+        per_page: "2",
+        prev_page_url: null,
+        to: 2,
+        total: 49
+    }
+
+You can use it how you'd typically use it on any eloquent model:
 
     /*
     |----------------------------------
@@ -291,7 +389,7 @@ This returns a regular Laravel pagination object. You can use it how you'd typic
 
     $entries = LogReader::paginate(25);
 
-    return View::make('logs', compact('entries'));
+    return view('logs', compact('entries'));
 
     /*
     |----------------------------------
@@ -309,43 +407,64 @@ You can also combine functions with the pagination like so:
 
     $entries = LogReader::level('error')->paginate(25);
 
+### Setting your own log parser
+Laravel Log Reader has a parser to use to analyze your log files. If you want to use your own parser, you need to follow these steps:
+
+- First, the class of your log parser must implements the `Jackiedo\LogReader\Contracts\LogParser` interface:
+
+```php
+<?php namespace YourNamespace;
+
+use Jackiedo\LogReader\Contracts\LogParser;
+
+class YourOwnLogParser implements LogParser {
+    //
+}
+
+```
+
+- Next step, change the parser with the `setLogParser()` method:
+
+```php
+$parser = new \YourNamespace\YourOwnLogParser;
+LogReader::setLogParser($parser)->get();
+```
+
 ### Setting your own log path
-By default, Laravel Log Reader uses the laravel helper `storage_path('logs')` as the log directory. If you need this changed just
-set a different path using:
+By default, Laravel Log Reader uses the value of the `path` key in your the `log-reader.php` configuration file as the path to the directory contains your all log files. If you need this changed just set a different path using:
 
     LogReader::setLogPath('logs');
 
 ### Dependency injection
 From now and then, it's possibly to use dependency injection to inject an instance of the LogReader class into your controller or other class. Example:
 
-    <?php namespace App\Http\Controllers;
+```php
+<?php namespace App\Http\Controllers;
 
-    use App\Http\Controllers\Controller;
-    use App\Http\Requests;
-    use App\Product;
-    use Illuminate\Http\Request;
-    use Jackiedo\LogReader\LogReader;
+use App\Http\Controllers\Controller;
+use App\Http\Requests;
+use App\Product;
+use Illuminate\Http\Request;
+use Jackiedo\LogReader\LogReader;
 
-    class TestLogReaderController extends Controller {
+class TestLogReaderController extends Controller {
 
-        protected $reader;
+    protected $reader;
 
-        public function __construct(LogReader $reader)
-        {
-            $this->reader = $reader;
-        }
-
-        public function index()
-        {
-            $reader = $this->reader->get();
-        }
+    public function __construct(LogReader $reader)
+    {
+        $this->reader = $reader;
     }
 
-### Exceptions
-If you've set your log path manually and log files do not exist in the given directory, you will receive
-an `UnableToRetrieveLogFilesException` (full namespace is `Jackiedo\LogReader\Exceptions\UnableToRetrieveLogFilesException`). For example:
+    public function index()
+    {
+        $reader = $this->reader->get();
+    }
+}
+```
 
-    LogReader::setLogPath('testing')->get();  // Throws UnableToRetrieveLogFilesException
+### Exceptions
+If you've set your log path manually and log files do not exist in the given directory, you will receive an `UnableToRetrieveLogFilesException` (full namespace is `Jackiedo\LogReader\Exceptions\UnableToRetrieveLogFilesException`).
 
 ## License
 [MIT](LICENSE) © Jackie Do
