@@ -1,16 +1,17 @@
 <?php namespace Jackiedo\LogReader;
 
+use Illuminate\Cache\CacheManager as Cache;
+use Illuminate\Config\Repository as Config;
+use Illuminate\Http\Request;
+use Illuminate\Pagination\Factory as Paginator;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Config;
-use Illuminate\Support\Facades\Input;
-use Illuminate\Support\Facades\Paginator;
-use Jackiedo\LogReader\Contracts\Levelable;
-use Jackiedo\LogReader\Contracts\Patternable;
+use Jackiedo\LogReader\Contracts\LogParser as LogParserInterface;
 use Jackiedo\LogReader\Entities\LogEntry;
 use Jackiedo\LogReader\Exceptions\UnableToRetrieveLogFilesException;
+use Jackiedo\LogReader\Levelable;
 
 /**
- * LogReader
+ * The LogReader class.
  *
  * @package Jackiedo\LogReader
  * @author Jackie Do <anhvudo@gmail.com>
@@ -20,15 +21,44 @@ use Jackiedo\LogReader\Exceptions\UnableToRetrieveLogFilesException;
 class LogReader
 {
     /**
-     * Store instance of Patternable for parsing log file
-     * @var object
+     * Store instance of Cache Repository for caching
+     *
+     * @var \Illuminate\Cache\Repository
      */
-    protected $patternable;
+    protected $cache;
+
+    /**
+     * Store instance of Config Repository for working with config
+     *
+     * @var \Illuminate\Config\Repository
+     */
+    protected $config;
+
+    /**
+     * Store instance of Request for getting request input
+     *
+     * @var \Illuminate\Http\Request
+     */
+    protected $request;
+
+    /**
+     * Store instance of Paginator for paginate
+     *
+     * @var \Illuminate\Paginator\Factory
+     */
+    protected $paginator;
+
+    /**
+     * Store instance of LogParser for parsing content of the log file
+     *
+     * @var \Jackiedo\LogReader\LogParser
+     */
+    protected $parser;
 
     /**
      * Store instance of Levelable to filter logs entry by level
      *
-     * @var object
+     * @var \Jackiedo\LogReader\Levelable
      */
     protected $levelable;
 
@@ -82,8 +112,7 @@ class LogReader
     protected $orderByDirection = '';
 
     /**
-     * Stores the bool whether or
-     * not to return read entries.
+     * Stores the bool whether or not to return read entries.
      *
      * @var bool
      */
@@ -91,25 +120,36 @@ class LogReader
 
     /**
      * Construct a new instance and set attributes.
+     *
+     * @param  object  $cache
+     * @param  object  $config
+     * @param  object  $request
+     *
+     * @return void
      */
-    public function __construct()
+    public function __construct(Cache $cache, Config $config, Request $request, Paginator $paginator)
     {
-        $this->patternable = new Patternable;
+        $this->cache     = $cache;
+        $this->config    = $config;
+        $this->request   = $request;
+        $this->paginator = $paginator;
         $this->levelable = new Levelable;
+        $this->parser    = new LogParser;
 
-        $this->setLogPath(Config::get('log-reader::path', storage_path('logs')));
-        $this->setLogFilename(Config::get('log-reader::filename', 'laravel.log'));
-        $this->setEnvironment(Config::get('log-reader::environment'));
-        $this->setLevel(Config::get('log-reader::level'));
-        $this->setOrderByField(Config::get('log-reader::order_by_field', ''));
-        $this->setOrderByDirection(Config::get('log-reader::order_by_direction', ''));
+        $this->setLogPath($this->config->get('log-reader::path', storage_path('logs')));
+        $this->setLogFilename($this->config->get('log-reader::filename', 'laravel.log'));
+        $this->setEnvironment($this->config->get('log-reader::environment'));
+        $this->setLevel($this->config->get('log-reader::level'));
+        $this->setOrderByField($this->config->get('log-reader::order_by_field', ''));
+        $this->setOrderByDirection($this->config->get('log-reader::order_by_direction', ''));
     }
 
     /**
-     * Sets the directory path to retrieve the
-     * log files from.
+     * Sets the directory path to retrieve the log files from.
      *
-     * @param string $path
+     * @param  string  $path
+     *
+     * @return void
      */
     public function setLogPath($path)
     {
@@ -117,111 +157,21 @@ class LogReader
     }
 
     /**
-     * Sets the log filename to retrieve the
-     * logs data from.
+     * Setting the parser for structural analysis
      *
-     * @param string $filename
-     */
-    public function setLogFilename($filename)
-    {
-        if (empty($filename)) {
-            $this->filename = '*.*';
-        } else {
-            $this->filename = $filename;
-        }
-    }
-
-    /**
-     * Sets the currentLogPath property to
-     * the specified path.
+     * @param  object $parser
      *
-     * @param string $path
+     * @return void
      */
-    private function setCurrentLogPath($path)
+    public function setLogParser(LogParserInterface $parser)
     {
-        $this->currentLogPath = $path;
-    }
-
-    /**
-     * Sets the orderByField property to the specified field.
-     *
-     * @param string $field
-     */
-    private function setOrderByField($field)
-    {
-        $field = strtolower($field);
-
-        $fields = [
-            'date',
-            'level',
-        ];
-
-        if (in_array($field, $fields)) {
-            $this->orderByField = $field;
-        }
-    }
-
-    /**
-     * Sets the orderByDirection property to the specified direction.
-     *
-     * @param string $direction
-     */
-    private function setOrderByDirection($direction)
-    {
-        $direction = strtolower($direction);
-
-        if ($direction == 'desc' || $direction == 'asc') {
-            $this->orderByDirection = $direction;
-        }
-    }
-
-    /**
-     * Sets the environment property to the specified environment.
-     *
-     * @param string $environment
-     */
-    private function setEnvironment($environment)
-    {
-        $environment = $environment;
-
-        $this->environment = $environment;
-    }
-
-    /**
-     * Sets the level property to the specified level.
-     *
-     * @param array $level
-     */
-    private function setLevel($level)
-    {
-        if (is_array($level)) {
-            $this->level = $level;
-        }
-    }
-
-    /**
-     * Sets the includeRead property.
-     *
-     * @param bool $bool
-     */
-    private function setIncludeRead($bool = false)
-    {
-        $this->includeRead = $bool;
-    }
-
-    /**
-     * Get instance of Patternable
-     *
-     * @return object Jackiedo\LogReader\Contracts\Patternable
-     */
-    public function getPatternable()
-    {
-        return $this->patternable;
+        $this->parser = $parser;
     }
 
     /**
      * Get instance of Levelable
-     * @return object Jackiedo\LogReader\Contracts\Levelable
+     *
+     * @return \Jackiedo\LogReader\Levelable
      */
     public function getLevelable()
     {
@@ -301,9 +251,9 @@ class LogReader
     /**
      * Sets the environment to sort the log entries by.
      *
-     * @param string $environment
+     * @param  string  $environment
      *
-     * @return $this
+     * @return \Jackiedo\LogReader\LogReader
      */
     public function environment($environment)
     {
@@ -315,9 +265,9 @@ class LogReader
     /**
      * Sets the level to sort the log entries by.
      *
-     * @param mixed $level
+     * @param  mixed  $level
      *
-     * @return $this
+     * @return \Jackiedo\LogReader\LogReader
      */
     public function level($level)
     {
@@ -337,9 +287,9 @@ class LogReader
     /**
      * Sets the filename to get log entries.
      *
-     * @param string $filename
+     * @param  string  $filename
      *
-     * @return $this
+     * @return \Jackiedo\LogReader\LogReader
      */
     public function filename($filename)
     {
@@ -351,9 +301,9 @@ class LogReader
     /**
      * Includes read entries in the log results.
      *
-     * @return $this
+     * @return \Jackiedo\LogReader\LogReader
      */
-    public function includeRead()
+    public function withRead()
     {
         $this->setIncludeRead(true);
 
@@ -361,12 +311,22 @@ class LogReader
     }
 
     /**
+     * Alias of the withRead() method.
+     *
+     * @return \Jackiedo\LogReader\LogReader
+     */
+    public function includeRead()
+    {
+        return $this->withRead();
+    }
+
+    /**
      * Sets the direction to return the log entries in.
      *
-     * @param string $field
-     * @param string $direction
+     * @param  string  $field
+     * @param  string  $direction
      *
-     * @return $this
+     * @return \Jackiedo\LogReader\LogReader
      */
     public function orderBy($field, $direction = 'asc')
     {
@@ -379,9 +339,9 @@ class LogReader
     /**
      * Returns a Laravel collection of log entries.
      *
-     * @return Collection
+     * @throws \Jackiedo\LogReader\Exceptions\UnableToRetrieveLogFilesException
      *
-     * @throws UnableToRetrieveLogFilesException
+     * @return Collection
      */
     public function get()
     {
@@ -389,53 +349,45 @@ class LogReader
 
         $files = $this->getLogFiles();
 
-        if (is_array($files)) {
-            /*
-             * Retrieve the log files
-             */
-            foreach ($files as $log) {
-                /*
-                 * Set the current log path for easy manipulation
-                 * of the file if needed
-                 */
-                $this->setCurrentLogPath($log['path']);
-
-                /*
-                 * Parse the log into an array of entries, passing in the level
-                 * so it can be filtered
-                 */
-                $parsedLog = $this->parseLog($log['contents'], $this->getEnvironment(), $this->getLevel());
-
-                /*
-                 * Create a new LogEntry object for each parsed log entry
-                 */
-                foreach ($parsedLog as $entry) {
-                    $newEntry = new LogEntry($entry);
-
-                    /*
-                     * Check if the entry has already been read,
-                     * and if read entries should be included.
-                     *
-                     * If includeRead is false, and the entry is read,
-                     * then continue processing.
-                     */
-                    if (!$this->includeRead && $newEntry->isRead()) {
-                        continue;
-                    }
-
-                    $entries[] = $newEntry;
-                }
-            }
-
-            /*
-             * Return a new Collection of entries
-             */
-            return $this->postCollectionModifiers(new Collection($entries));
+        if (! is_array($files)) {
+            throw new UnableToRetrieveLogFilesException('Unable to retrieve files from path: '.$this->getLogPath());
         }
 
-        $message = 'Unable to retrieve files from path: '.$this->getLogPath();
+        foreach ($files as $log) {
+            /*
+             * Set the current log path for easy manipulation
+             * of the file if needed
+             */
+            $this->setCurrentLogPath($log['path']);
 
-        throw new UnableToRetrieveLogFilesException($message);
+            /*
+             * Parse the log into an array of entries, passing in the level
+             * so it can be filtered
+             */
+            $parsedLog = $this->parseLog($log['contents'], $this->getEnvironment(), $this->getLevel());
+
+            /*
+             * Create a new LogEntry object for each parsed log entry
+             */
+            foreach ($parsedLog as $entry) {
+                $newEntry = new LogEntry($this->parser, $this->cache, $entry);
+
+                /*
+                 * Check if the entry has already been read,
+                 * and if read entries should be included.
+                 *
+                 * If includeRead is false, and the entry is read,
+                 * then continue processing.
+                 */
+                if (!$this->includeRead && $newEntry->isRead()) {
+                    continue;
+                }
+
+                $entries[$newEntry->id] = $newEntry;
+            }
+        }
+
+        return $this->postCollectionModifiers(new Collection($entries));
     }
 
     /**
@@ -451,19 +403,13 @@ class LogReader
     /**
      * Finds a logged error by it's ID.
      *
-     * @param string $id
+     * @param  string  $id
      *
      * @return mixed|null
      */
     public function find($id = '')
     {
-        $entries = $this->get()->filter(function ($entry) use ($id) {
-            if ($entry->id === $id) {
-                return true;
-            }
-        });
-
-        return $entries->first();
+        return $this->get()->get($id);
     }
 
     /**
@@ -472,19 +418,29 @@ class LogReader
      *
      * @return int
      */
-    public function markRead()
+    public function markAsRead()
     {
         $entries = $this->get();
 
         $count = 0;
 
         foreach ($entries as $entry) {
-            if ($entry->markRead()) {
+            if ($entry->markAsRead()) {
                 ++$count;
             }
         }
 
         return $count;
+    }
+
+    /**
+     * Alias of the markAsRead() method.
+     *
+     * @return int
+     */
+    public function markRead()
+    {
+        return $this->markAsRead();
     }
 
     /**
@@ -532,7 +488,7 @@ class LogReader
     /**
      * Paginates the returned log entries.
      *
-     * @param int $perPage
+     * @param  int  $perPage
      *
      * @return mixed
      */
@@ -548,64 +504,181 @@ class LogReader
 
         $entries = $entries->slice($offset, $perPage, true)->all();
 
-        return Paginator::make($entries, $total, $perPage);
+        return $this->paginator->make($entries, $total, $perPage);
+    }
+
+    /**
+     * Returns an array of log filenames.
+     *
+     * @param  null|string  $filename
+     *
+     * @return array
+     */
+    public function getLogFilenameList($filename = null)
+    {
+        $data = [];
+        if (empty($filename)) {
+            $filename = '*.*';
+        }
+        $files = $this->getLogFileList($filename);
+
+        if (is_array($files)) {
+            foreach ($files as $file) {
+                $basename = pathinfo($file, PATHINFO_BASENAME);
+                $filename = pathinfo($file, PATHINFO_FILENAME);
+                // $data[$basename] = preg_replace(['/\-\-*|\_\_*/', '/\s\s*/'], [' ', ' '], $filename);
+                $data[$basename] = $basename;
+            }
+        }
+
+        return $data;
+    }
+
+    /**
+     * Sets the currentLogPath property to
+     * the specified path.
+     *
+     * @param  string  $path
+     *
+     * @return void
+     */
+    protected function setCurrentLogPath($path)
+    {
+        $this->currentLogPath = $path;
+    }
+
+    /**
+     * Sets the log filename to retrieve the logs data from.
+     *
+     * @param  string  $filename
+     *
+     * @return void
+     */
+    protected function setLogFilename($filename)
+    {
+        if (empty($filename)) {
+            $this->filename = '*.*';
+        } else {
+            $this->filename = $filename;
+        }
+    }
+
+    /**
+     * Sets the orderByField property to the specified field.
+     *
+     * @param  string  $field
+     *
+     * @return void
+     */
+    protected function setOrderByField($field)
+    {
+        $field = strtolower($field);
+
+        $acceptedFields = [
+            'id',
+            'date',
+            'level',
+            'environment',
+            'file_path'
+        ];
+
+        if (in_array($field, $acceptedFields)) {
+            $this->orderByField = $field;
+        }
+    }
+
+    /**
+     * Sets the orderByDirection property to the specified direction.
+     *
+     * @param  string  $direction
+     *
+     * @return void
+     */
+    protected function setOrderByDirection($direction)
+    {
+        $direction = strtolower($direction);
+
+        if ($direction == 'desc' || $direction == 'asc') {
+            $this->orderByDirection = $direction;
+        }
+    }
+
+    /**
+     * Sets the environment property to the specified environment.
+     *
+     * @param  string  $environment
+     *
+     * @return void
+     */
+    protected function setEnvironment($environment)
+    {
+        $this->environment = $environment;
+    }
+
+    /**
+     * Sets the level property to the specified level.
+     *
+     * @param  array  $level
+     *
+     * @return void
+     */
+    protected function setLevel($level)
+    {
+        if (is_array($level)) {
+            $this->level = $level;
+        }
+    }
+
+    /**
+     * Sets the includeRead property.
+     *
+     * @param  bool  $bool
+     *
+     * @return void
+     */
+    protected function setIncludeRead($bool = false)
+    {
+        $this->includeRead = $bool;
     }
 
     /**
      * Modifies and returns the collection result if modifiers are set
      * such as an orderBy.
      *
-     * @param Collection $collection
+     * @param  Collection  $collection
      *
      * @return Collection
      */
-    private function postCollectionModifiers(Collection $collection)
+    protected function postCollectionModifiers(Collection $collection)
     {
         if ($this->getOrderByField() && $this->getOrderByDirection()) {
-            $collection = $this->processCollectionOrderBy($collection);
+            $field = $this->getOrderByField();
+            $desc  = false;
+
+            if ($this->getOrderByDirection() === 'desc') {
+                $desc = true;
+            }
+
+            $sorted = $collection->sortBy(function ($entry) use ($field) {
+                if (property_exists($entry, $field)) {
+                    return $entry->{$field};
+                }
+            }, SORT_NATURAL, $desc);
+
+            return $sorted;
         }
 
         return $collection;
     }
 
     /**
-     * Modifies the collection to be sorted by the orderByField and
-     * orderByDirection properties.
-     *
-     * @param Collection $collection
-     *
-     * @return $this|Collection
-     */
-    private function processCollectionOrderBy(Collection $collection)
-    {
-        $field = $this->getOrderByField();
-
-        $direction = $this->getOrderByDirection();
-
-        $desc = false;
-
-        if ($direction === 'desc') {
-            $desc = true;
-        }
-
-        $sorted = $collection->sortBy(function ($entry) use ($field) {
-            if (property_exists($entry, $field)) {
-                return $entry->{$field};
-            }
-        }, SORT_NATURAL, $desc);
-
-        return $sorted;
-    }
-
-    /**
-     * Returns the current page from the current input.
-     * Used for pagination.
+     * Returns the current page from the current input. Used for pagination.
      *
      * @return int
      */
-    private function getPageFromInput()
+    protected function getPageFromInput()
     {
-        $page = Input::get('page');
+        $page = $this->request->input('page');
 
         if (is_numeric($page)) {
             return intval($page);
@@ -615,85 +688,64 @@ class LogReader
     }
 
     /**
-     * Parses the content of the file separating
-     * the errors into a single array.
+     * Parses the content of the file separating the errors into a single array.
      *
-     * @param string $content
-     * @param string $allowedEnvironment
-     * @param array $allowedLevel
+     * @param  string  $content
+     * @param  string  $allowedEnvironment
+     * @param  array   $allowedLevel
      *
      * @return array
      */
-    private function parseLog($content, $allowedEnvironment = null, $allowedLevel = [])
+    protected function parseLog($content, $allowedEnvironment = null, $allowedLevel = [])
     {
         $log = [];
 
-        // The regex pattern to match the log entry header
-        $pattern = $this->patternable->getHeaderPattern();
+        $parsed = $this->parser->parseLogContent($content);
 
-        preg_match_all($pattern, $content, $headings);
+        extract($parsed, EXTR_PREFIX_ALL, 'parsed');
 
-        if (!is_array($headings)) {
+        if (empty($parsed_headerSet)) {
             return $log;
         }
-        list($headerList, $dateList, $envList, $levelList) = $headings;
 
-        $stackList = preg_split($pattern, $content);
+        $needReFormat = in_array('Next', $parsed_headerSet);
+        $newContent   = null;
 
-        if (trim($stackList[0]) == "") {
-            array_shift($stackList);
-        }
-
-        $reFormated = false;
-        $newContent = null;
-
-        foreach ($headerList as $key => $header) {
-            if (empty($dateList[$key])) {
-                $dateList[$key]  = $dateList[$key-1];
-                $envList[$key]   = $envList[$key-1];
-                $levelList[$key] = $levelList[$key-1];
-                $header          = str_replace("\nNext", "[".$dateList[$key]."] ".$envList[$key].".".$levelList[$key].":", $header);
-
-                $reFormated = true;
+        foreach ($parsed_headerSet as $key => $header) {
+            if (empty($parsed_dateSet[$key])) {
+                $parsed_dateSet[$key]  = $parsed_dateSet[$key-1];
+                $parsed_envSet[$key]   = $parsed_envSet[$key-1];
+                $parsed_levelSet[$key] = $parsed_levelSet[$key-1];
+                $header                = str_replace("Next", $parsed_headerSet[$key-1], $header);
             }
 
-            $newContent .= $header.$stackList[$key];
+            $newContent .= $header.' '.$parsed_bodySet[$key];
 
-            if ((empty($allowedEnvironment) || $allowedEnvironment == $envList[$key]) && $this->levelable->filter($levelList[$key], $allowedLevel)) {
+            if ((empty($allowedEnvironment) || $allowedEnvironment == $parsed_envSet[$key]) && $this->levelable->filter($parsed_levelSet[$key], $allowedLevel)) {
                 $log[] = [
-                    'environment' => $envList[$key],
-                    'level'       => $levelList[$key],
-                    'date'        => $dateList[$key],
+                    'environment' => $parsed_envSet[$key],
+                    'level'       => $parsed_levelSet[$key],
+                    'date'        => $parsed_dateSet[$key],
+                    'file_path'   => $this->getCurrentLogPath(),
                     'header'      => $header,
-                    'stack'       => $stackList[$key],
-                    'filePath'    => $this->getCurrentLogPath(),
+                    'body'        => $parsed_bodySet[$key]
                 ];
             }
         }
 
-        if ($reFormated) {
+        if ($needReFormat) {
             file_put_contents($this->getCurrentLogPath(), $newContent);
         }
-
-        unset($pattern);
-        unset($headings);
-        unset($headerList);
-        unset($dateList);
-        unset($envList);
-        unset($levelList);
-        unset($reFormated);
-        unset($newContent);
 
         return $log;
     }
 
     /**
-     * Retrieves all the data inside each log file
-     * from the log file list.
+     * Retrieves all the data inside each log file from the log file list.
      *
      * @return array|bool
      */
-    private function getLogFiles()
+    protected function getLogFiles()
     {
         $data = [];
 
@@ -717,11 +769,11 @@ class LogReader
     /**
      * Returns an array of log file paths.
      *
-     * @param null|string $forceName
+     * @param  null|string  $forceName
      *
      * @return bool|array
      */
-    private function getLogFileList($forceName = null)
+    protected function getLogFileList($forceName = null)
     {
         $path = $this->getLogPath();
 
@@ -743,32 +795,5 @@ class LogReader
         }
 
         return false;
-    }
-
-    /**
-     * Returns an array of log filenames.
-     *
-     * @param null|string $filename
-     *
-     * @return array
-     */
-    public function getLogFilenameList($filename = null)
-    {
-        $data = [];
-        if (empty($filename)) {
-            $filename = '*.*';
-        }
-        $files = $this->getLogFileList($filename);
-
-        if (is_array($files)) {
-            foreach ($files as $file) {
-                $basename = pathinfo($file, PATHINFO_BASENAME);
-                $filename = pathinfo($file, PATHINFO_FILENAME);
-                // $data[$basename] = preg_replace(['/\-\-*|\_\_*/', '/\s\s*/'], [' ', ' '], $filename);
-                $data[$basename] = $basename;
-            }
-        }
-
-        return $data;
     }
 }

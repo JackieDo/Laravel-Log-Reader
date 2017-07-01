@@ -1,12 +1,14 @@
 <?php namespace Jackiedo\LogReader\Entities;
 
 use Carbon\Carbon;
-use Illuminate\Support\Facades\Cache;
+use Illuminate\Cache\CacheManager as Cache;
+use Illuminate\Support\Collection;
+use Jackiedo\LogReader\Contracts\LogParser;
 
 /**
- * LogEntry
+ * The LogEntry class.
  *
- * @package Jackiedo\LogReader\Entities
+ * @package Jackiedo\LogReader
  * @author Jackie Do <anhvudo@gmail.com>
  * @copyright 2017
  * @access public
@@ -14,56 +16,72 @@ use Illuminate\Support\Facades\Cache;
 class LogEntry
 {
     /**
-     * The entry's ID.
+     * The Unique ID of the log entry.
      *
      * @var string
      */
-    public $id = '';
+    public $id;
 
     /**
-     * The entry's date string.
+     * The date of the log entry.
+     *
+     * @var \Carbon\Carbon
+     */
+    public $date;
+
+    /**
+     * The environment of the log entry.
      *
      * @var string
      */
-    public $date = '';
+    public $environment;
 
     /**
-     * The entry's environment string.
+     * The level of the log entry.
      *
      * @var string
      */
-    public $environment = '';
+    public $level;
 
     /**
-     * The entry's level string.
+     * The path to the log file containing the log entry.
      *
      * @var string
      */
-    public $level = '';
+    public $file_path;
 
     /**
-     * The entry's file path.
+     * The context of the log entry.
      *
-     * @var string
+     * @var \Jackiedo\LogReader\Entities\LogContext
      */
-    public $filePath = '';
+    public $context;
 
     /**
-     * The entry's header string.
+     * The stack trace entries of the log entry.
+     * Each trace entry is an instance of
+     * \Jackiedo\LogReader\Entities\TraceEntry
      *
-     * @var string
+     * @var \Illuminate\Support\Collection
      */
-    public $header = '';
+    public $stack_traces;
 
     /**
-     * The entry's stack.
+     * Store instance of LogParser for parsing content of the log entry
      *
-     * @var array
+     * @var \Jackiedo\LogReader\LogParser
      */
-    public $stack = [];
+    protected $parser;
 
     /**
-     * The entry's attributes.
+     * Store instance of Cache Repository for caching.
+     *
+     * @var \Illuminate\Cache\Repository
+     */
+    protected $cache;
+
+    /**
+     * The original attributes of the log entry.
      *
      * @var array
      */
@@ -72,37 +90,93 @@ class LogEntry
     /**
      * Constructs a new entry object with the specified attributes.
      *
-     * @param array $attributes
+     * @param  object  $parser
+     * @param  object  $cache
+     * @param  array   $attributes
+     *
+     * @return void
      */
-    public function __construct($attributes = [])
+    public function __construct(LogParser $parser, Cache $cache, $attributes = [])
     {
-        $this->setAttributes($attributes);
+        $this->parser = $parser;
+        $this->cache  = $cache;
 
+        $this->setAttributes($attributes);
         $this->assignAttributes();
     }
 
     /**
-     * Stores the entry in the cache so it is no longer shown
+     * Magic accessor
+     *
+     * @param  string  $property
+     *
+     * @return mixed
+     */
+    public function __get($property)
+    {
+        return $this->getAttribute($property);
+    }
+
+    /**
+     * Retrieves an attribute of the log entry
+     *
+     * @param  $key
+     *
+     * @return mixed
+     */
+    public function getAttribute($key)
+    {
+        $key = $this->reFormatForCompatibility($key);
+
+        return (property_exists($this, $key)) ? $this->{$key} : null;
+    }
+
+    /**
+     * Get original value of an property of the log entry
+     *
+     * @param  string  $key
+     *
+     * @return void
+     */
+    public function getOriginal($key)
+    {
+        $key = $this->reFormatForCompatibility($key);
+
+        return (array_key_exists($key, $this->attributes)) ? $this->attributes[$key] : null;
+    }
+
+    /**
+     * Stores the log entry in the cache so it is no longer shown
      * in the log results.
+     *
+     * @return mixed
+     */
+    public function markAsRead()
+    {
+        return $this->cache->rememberForever($this->makeCacheKey(), function () {
+            return $this->getRawContent();
+        });
+    }
+
+    /**
+     * Alias of the markAsRead() method.
      *
      * @return mixed
      */
     public function markRead()
     {
-        return Cache::rememberForever($this->makeCacheKey(), function () {
-            return $this;
-        });
+        return $this->markAsRead();
     }
 
     /**
-     * Returns true/false depending if the entry
+     * Returns true/false depending if the log entry
      * has been marked read (exists inside the cache).
      *
      * @return bool
      */
     public function isRead()
     {
-        if (Cache::has($this->makeCacheKey())) {
+        if ($this->cache->has($this->makeCacheKey())) {
             return true;
         }
 
@@ -116,106 +190,68 @@ class LogEntry
      */
     public function delete()
     {
-        $filePath = $this->getAttribute('filePath');
+        $rawContent = $this->getRawContent();
+        $filePath   = $this->attributes['file_path'];
+        $logContent = file_get_contents($filePath);
+        $logContent = str_replace($rawContent, '', $logContent);
 
-        $contents = file_get_contents($filePath);
-
-        $contents = str_replace($this->getAttribute('header').$this->getAttribute('stack'), '', $contents);
-
-        file_put_contents($filePath, $contents);
+        file_put_contents($filePath, $logContent);
 
         return true;
     }
 
     /**
-     * Retrieves an attribute by the specified key
-     * from the attributes array.
-     *
-     * @param $key
-     */
-    public function getAttribute($key)
-    {
-        $attributes = $this->getAttributes();
-
-        if (array_key_exists($key, $attributes)) {
-            return $attributes[$key];
-        }
-
-        return;
-    }
-
-    /**
-     * Alias of getAttribute() method.
-     *
-     * @param $key
-     */
-    public function getOriginal($key)
-    {
-        return $this->getAttribute($key);
-    }
-
-    /**
-     * Returns a attributes array.
-     *
-     * @return array
-     */
-    public function getAttributes()
-    {
-        return $this->attributes;
-    }
-
-    /**
-     * Returns a compressed entry header suitable to
-     * be used as the entry's ID.
+     * Return raw content of the log entry.
      *
      * @return string
      */
-    private function makeId()
+    public function getRawContent()
     {
-        return md5($this->getAttribute('header'));
+        return $this->attributes['header'].' '.$this->attributes['body'];
     }
 
     /**
-     * Returns a key string for storing the entry
+     * Returns a compressed entry context suitable to
+     * be used as the log entry's ID.
+     *
+     * @return string
+     */
+    protected function generateId()
+    {
+        return md5($this->getRawContent());
+    }
+
+    /**
+     * Returns a key string for storing the log entry
      * inside the cache.
      *
      * @return string
      */
-    private function makeCacheKey()
+    protected function makeCacheKey()
     {
-        return $this->id;
+        return 'log'.$this->id;
     }
 
     /**
-     * Sets the entry's filePath property.
+     * Sets the log entry's ID property.
      *
-     * @param $path
+     * @param  $id
+     *
+     * @return void
      */
-    private function setFilePath($path = null)
+    protected function setId($id)
     {
-        if ($path) {
-            $this->filePath = $path;
-        }
+        $this->id = $id;
     }
 
     /**
-     * Sets the entry's level property.
+     * Sets the log entry's date property.
      *
-     * @param $header
-     */
-    private function setHeader($header = null)
-    {
-        if ($header) {
-            $this->header = trim(str_replace("[".$this->getAttribute('date')."] ".$this->getAttribute('environment').".".$this->getAttribute('level').":", "", $header));
-        }
-    }
-
-    /**
-     * Sets the entry's date property.
+     * @param  string  $date
      *
-     * @param $date
+     * @return void
      */
-    private function setDate($date = null)
+    protected function setDate($date = null)
     {
         if ($date) {
             $this->date = Carbon::createFromFormat('Y-m-d H:i:s', $date);
@@ -223,26 +259,13 @@ class LogEntry
     }
 
     /**
-     * Sets the entry's level property.
+     * Sets the log entry's environment property.
      *
-     * @param $stack
-     */
-    private function setStack($stack = null)
-    {
-        if ($stack) {
-            $stackArray = preg_split('/\n?\#\d+\s/', trim(str_replace("Stack trace:\n", '', $stack)));
-            array_shift($stackArray);
-
-            $this->stack = $stackArray;
-        }
-    }
-
-    /**
-     * Sets the entry's environment property.
+     * @param  string  $environment
      *
-     * @param $environment
+     * @return void
      */
-    private function setEnvironment($environment = null)
+    protected function setEnvironment($environment = null)
     {
         if ($environment) {
             $this->environment = strtolower($environment);
@@ -250,11 +273,13 @@ class LogEntry
     }
 
     /**
-     * Sets the entry's level property.
+     * Sets the log entry's level property.
      *
-     * @param $level
+     * @param  string  $level
+     *
+     * @return void
      */
-    private function setLevel($level = null)
+    protected function setLevel($level = null)
     {
         if ($level) {
             $this->level = strtolower($level);
@@ -262,21 +287,63 @@ class LogEntry
     }
 
     /**
-     * Sets the entry's ID property.
+     * Sets the log entry's file_path property.
      *
-     * @param $id
+     * @param  string  $path
+     *
+     * @return void
      */
-    private function setId($id)
+    protected function setFilePath($path = null)
     {
-        $this->id = $id;
+        if ($path) {
+            $this->file_path = $path;
+        }
+    }
+
+    /**
+     * Sets the log entry's context property.
+     *
+     * @param  string  $context
+     *
+     * @return void
+     */
+    protected function setContext($context = null)
+    {
+        if ($context) {
+            $this->context = new LogContext($this->parser, $context);
+        }
+    }
+
+    /**
+     * Sets the log entry's level property.
+     *
+     * @param  $stackTraces
+     *
+     * @return void
+     */
+    protected function setStackTraces($stackTraces = null)
+    {
+        $traces = $this->parser->parseStackTrace($stackTraces);
+
+        $output = [];
+
+        foreach ($traces as $trace) {
+            if (trim($trace) != '{main} [] []') {
+                $output[] = new TraceEntry($this->parser, $trace);
+            }
+        }
+
+        $this->stack_traces = new Collection($output);
     }
 
     /**
      * Sets the attributes property.
      *
-     * @param array $attributes
+     * @param  array  $attributes
+     *
+     * @return void
      */
-    private function setAttributes($attributes = [])
+    protected function setAttributes($attributes = [])
     {
         if (is_array($attributes)) {
             $this->attributes = $attributes;
@@ -285,16 +352,52 @@ class LogEntry
 
     /**
      * Assigns the valid keys in the attributes array
-     * to the properties in the entry.
+     * to the properties in the log entry.
+     *
+     * @return void
      */
-    private function assignAttributes()
+    protected function assignAttributes()
     {
-        $this->setId($this->makeId());
-        $this->setDate($this->getAttribute('date'));
-        $this->setEnvironment($this->getAttribute('environment'));
-        $this->setLevel($this->getAttribute('level'));
-        $this->setFilePath($this->getAttribute('filePath'));
-        $this->setHeader($this->getAttribute('header'));
-        $this->setStack($this->getAttribute('stack'));
+        $bodyParsed                       = $this->parser->parseLogBody($this->attributes['body']);
+        $this->attributes['context']      = $bodyParsed['context'];
+        $this->attributes['stack_traces'] = $bodyParsed['stack_traces'];
+
+        $this->setId($this->generateId());
+        $this->setDate($this->attributes['date']);
+        $this->setEnvironment($this->attributes['environment']);
+        $this->setLevel($this->attributes['level']);
+        $this->setFilePath($this->attributes['file_path']);
+        $this->setContext($this->attributes['context']);
+        $this->setStackTraces($this->attributes['stack_traces']);
+    }
+
+    /**
+     * Convert the property strings to be compatible with older version
+     *
+     * @param  string $property
+     *
+     * @return string
+     */
+    protected function reFormatForCompatibility($property)
+    {
+        switch (true) {
+            case ($property == 'header'):
+                $property = 'context';
+                break;
+
+            case ($property == 'stack'):
+                $property = 'stack_traces';
+                break;
+
+            case ($property == 'filePath'):
+                $property = 'file_path';
+                break;
+
+            default:
+                # code...
+                break;
+        }
+
+        return $property;
     }
 }

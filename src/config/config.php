@@ -7,8 +7,7 @@ return array(
     | Path to directory for storing log files
     |--------------------------------------------------------------------------
     |
-    | This is path to directory storing your log files. In Laravel
-    | 4.2, normally this path is app/storage/logs
+    | This is path to directory storing your log files.
     |
     */
 

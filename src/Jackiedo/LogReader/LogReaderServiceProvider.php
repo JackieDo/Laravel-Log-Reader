@@ -2,9 +2,16 @@
 
 use Illuminate\Support\ServiceProvider;
 
+/**
+ * The LogReaderServiceProvider class.
+ *
+ * @package Jackiedo\LogReader
+ * @author Jackie Do <anhvudo@gmail.com>
+ * @copyright 2017
+ * @access public
+ */
 class LogReaderServiceProvider extends ServiceProvider
 {
-
     /**
      * Indicates if loading of the provider is deferred.
      *
@@ -30,7 +37,7 @@ class LogReaderServiceProvider extends ServiceProvider
     public function register()
     {
         $this->app['log-reader'] = $this->app->share(function ($app) {
-            return new LogReader;
+            return new LogReader($app['cache'], $app['config'], $app['request'], $app['paginator']);
         });
     }
 
