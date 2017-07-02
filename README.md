@@ -435,7 +435,7 @@ These parameters are very useful for flexible paging. Take a look at the followi
     public function index()
     {
         if ($this->request->has('current_page')) {
-            return LogReader::paginate($this->request->has('per_page', 10), null, [
+            return LogReader::paginate($this->request->input('per_page', 10), null, [
                 'pageName' => 'current_page',
                 'query' => [
                     'language' => 'english'
