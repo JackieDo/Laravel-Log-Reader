@@ -488,23 +488,40 @@ class LogReader
     /**
      * Paginates the returned log entries.
      *
-     * @param  int  $perPage
+     * @param  int    $perPage
+     * @param  int    $currentPage
+     * @param  array  $options  [path => '', query => [], fragment => '', pageName => '']
      *
      * @return mixed
      */
-    public function paginate($perPage = 25)
+    public function paginate($perPage = 25, $currentPage = null, array $options = [])
     {
-        $currentPage = $this->getPageFromInput();
+        $currentPage = $this->getPageFromInput($currentPage, $options);
+        $offset      = ($currentPage - 1) * $perPage;
+        $total       = $this->count();
+        $entries     = $this->get()->slice($offset, $perPage, true)->all();
 
-        $offset = (($currentPage - 1) * $perPage);
+        $this->paginator->setCurrentPage($currentPage);
 
-        $entries = $this->get();
+        if (array_key_exists('path', $options)) {
+            $this->paginator->setBaseUrl($options['path']);
+        }
 
-        $total = $entries->count();
+        if (array_key_exists('pageName', $options)) {
+            $this->paginator->setPageName($options['pageName']);
+        }
 
-        $entries = $entries->slice($offset, $perPage, true)->all();
+        $paginated = $this->paginator->make($entries, $total, $perPage);
 
-        return $this->paginator->make($entries, $total, $perPage);
+        if (array_key_exists('query', $options)) {
+            $paginated->appends($options['query']);
+        }
+
+        if (array_key_exists('fragment', $options)) {
+            $paginated->fragment($options['fragment']);
+        }
+
+        return $paginated;
     }
 
     /**
@@ -674,11 +691,19 @@ class LogReader
     /**
      * Returns the current page from the current input. Used for pagination.
      *
+     * @param  int    $currentPage
+     * @param  array  $options  [path => '', query => [], fragment => '', pageName => '']
+     *
      * @return int
      */
-    protected function getPageFromInput()
+    protected function getPageFromInput($currentPage = null, array $options = [])
     {
-        $page = $this->request->input('page');
+        if (is_numeric($currentPage)) {
+            return intval($currentPage);
+        }
+
+        $pageName = (array_key_exists('pageName', $options)) ? $options['pageName'] : 'page';
+        $page     = $this->request->input($pageName);
 
         if (is_numeric($page)) {
             return intval($page);
