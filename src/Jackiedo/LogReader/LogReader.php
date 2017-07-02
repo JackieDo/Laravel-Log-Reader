@@ -480,23 +480,20 @@ class LogReader
     /**
      * Paginates the returned log entries.
      *
-     * @param  int  $perPage
+     * @param  int    $perPage
+     * @param  int    $currentPage
+     * @param  array  $options  [path => '', query => [], fragment => '', pageName => '']
      *
      * @return mixed
      */
-    public function paginate($perPage = 25)
+    public function paginate($perPage = 25, $currentPage = null, array $options = [])
     {
-        $currentPage = $this->getPageFromInput();
+        $currentPage = $this->getPageFromInput($currentPage, $options);
+        $offset      = ($currentPage - 1) * $perPage;
+        $total       = $this->count();
+        $entries     = $this->get()->slice($offset, $perPage)->all();
 
-        $offset = (($currentPage - 1) * $perPage);
-
-        $entries = $this->get();
-
-        $total = $entries->count();
-
-        $entries = $entries->slice($offset, $perPage, true)->all();
-
-        return new LengthAwarePaginator($entries, $total, $perPage);
+        return new LengthAwarePaginator($entries, $total, $perPage, $currentPage, $options);
     }
 
     /**
@@ -666,11 +663,20 @@ class LogReader
     /**
      * Returns the current page from the current input. Used for pagination.
      *
+     * @param  int    $currentPage
+     * @param  array  $options  [path => '', query => [], fragment => '', pageName => '']
+     *
      * @return int
      */
-    protected function getPageFromInput()
+    protected function getPageFromInput($currentPage = null, array $options = [])
     {
-        $page = $this->request->input('page');
+        if (is_numeric($currentPage)) {
+            return intval($currentPage);
+        }
+
+        $pageName = (array_key_exists('pageName', $options)) ? $options['pageName'] : 'page';
+
+        $page = $this->request->input($pageName);
 
         if (is_numeric($page)) {
             return intval($page);

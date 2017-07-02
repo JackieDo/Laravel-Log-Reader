@@ -31,6 +31,7 @@ Look at one of the following topics to learn more about Laravel Log Reader
     - [Removing the log file](#removing-the-log-file)
     - [Ordering result of your get log entries request](#ordering-result-of-your-get-log-entries-request)
     - [Paginating result of your get log entries request](#paginating-result-of-your-get-log-entries-request)
+    - [Customize paginating with additional parameters](#customize-paginating-with-additional-parameters)
     - [Setting your own log parser](#setting-your-own-log-parser)
     - [Setting your own log path](#setting-your-own-log-path)
     - [Dependency injection](#dependency-injection)
@@ -359,7 +360,7 @@ You can easily order your results as well using the `orderBy($field[, $direction
 
 ### Paginating result of your get log entries request
 
-    LogReader::paginate(25);
+    LogReader::paginate(2);
 
 This returns a regular Laravel pagination object. For example:
 
@@ -406,6 +407,45 @@ You can use it how you'd typically use it on any eloquent model:
 You can also combine functions with the pagination like so:
 
     $entries = LogReader::level('error')->paginate(25);
+
+### Customize paginating with additional parameters
+You already know how to simple paging with the `paginate()` method. Now, you should know that the `paginate()` method has total three parameters as follow:
+
+    LogReader::paginate($perPage = 25, $currentPage = null, $options = []);
+
+The second parameter is the page that you want to displayed. Pass the `null` value if you want to show page 1. Example:
+
+    LogReader::paginate(10, 2);  // Display the second page
+
+The third parameter is options that you want to set up for paginating, include base URL (path), page name (pageName), fragment (fragment) and query strings (query) that you want to append. Example:
+
+    LogReader::paginate(10, null, [
+        'path'     => 'your-path',
+        'pageName' => 'display',
+        'fragment' => 'your-anchor',
+        'query'    => [
+            'option1' => 'value1',
+            'option2' => 'value2'
+        ]
+    ]);
+
+These parameters are very useful for flexible paging. Take a look at the following example:
+
+    ...
+    public function index()
+    {
+        if ($this->request->has('current_page')) {
+            return LogReader::paginate($this->request->has('per_page', 10), null, [
+                'pageName' => 'current_page',
+                'query' => [
+                    'language' => 'english'
+                ]
+            ]);
+        }
+
+        return LogReader::get();
+    }
+    ...
 
 ### Setting your own log parser
 Laravel Log Reader has a parser to use to analyze your log files. If you want to use your own parser, you need to follow these steps:
