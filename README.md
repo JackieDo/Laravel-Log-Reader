@@ -36,6 +36,7 @@ Look at one of the following topics to learn more about Laravel Log Reader
     - [Setting your own log path](#setting-your-own-log-path)
     - [Dependency injection](#dependency-injection)
     - [Exceptions](#exceptions)
+* [Some screenshots](#some-screenshots)
 * [License](#license)
 * [Thanks from author](#thanks-for-use)
 
@@ -505,6 +506,17 @@ class TestLogReaderController extends Controller {
 
 ### Exceptions
 If you've set your log path manually and log files do not exist in the given directory, you will receive an `UnableToRetrieveLogFilesException` (full namespace is `Jackiedo\LogReader\Exceptions\UnableToRetrieveLogFilesException`).
+
+## Some screenshots
+These are some screenshots about using Laravel Log Reader in my project.
+
+> The log entries list.
+
+![index_collapsed](https://user-images.githubusercontent.com/9862115/27783200-76478934-5fff-11e7-86b8-ef74d2a202b7.png)
+
+> Detail expanded of the log entry.
+
+![index_expanded](https://user-images.githubusercontent.com/9862115/27783212-7a9fce74-5fff-11e7-9ae8-25e9aed85a4f.png)
 
 ## License
 [MIT](LICENSE) © Jackie Do
