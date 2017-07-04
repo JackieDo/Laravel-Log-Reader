@@ -34,6 +34,7 @@ Look at one of the following topics to learn more about Laravel Log Reader
     - [Customize paginating with additional parameters](#customize-paginating-with-additional-parameters)
     - [Setting your own log parser](#setting-your-own-log-parser)
     - [Setting your own log path](#setting-your-own-log-path)
+    - [Working via Artisan CLI](#working-via-artisan-cli)
     - [Exceptions](#exceptions)
 * [Some screenshots](#some-screenshots)
 * [License](#license)
@@ -472,6 +473,22 @@ By default, Laravel Log Reader uses the value of the `path` key in your the `log
 
     LogReader::setLogPath('logs');
 
+### Working via Artisan CLI
+Now, you can working with Laravel Log Reader via Artisan CLI. This is useful for reading log file content with a more visual structure, rather than reading its raw content. There are 5 artisan commands you can use as follow:
+
+- log-reader:file-list
+- log-reader:get
+- log-reader:detail
+- log-reader:delete
+- log-reader:remove-file
+
+Example:
+```
+$ php artisan log-reader:get --order-by=date --order-direction=desc --paginate --per-page=5
+```
+
+You should use each command with the `--help` option to more detail about using.
+
 ### Exceptions
 If you've set your log path manually and log files do not exist in the given directory, you will receive an `UnableToRetrieveLogFilesException` (full namespace is `Jackiedo\LogReader\Exceptions\UnableToRetrieveLogFilesException`).
 
@@ -485,6 +502,12 @@ These are some screenshots about using Laravel Log Reader in my project.
 > Detail expanded of the log entry.
 
 ![index_expanded](https://user-images.githubusercontent.com/9862115/27783212-7a9fce74-5fff-11e7-9ae8-25e9aed85a4f.png)
+
+> Working via Artisan CLI.
+
+![artisan_get](https://user-images.githubusercontent.com/9862115/27825287-41de5fbc-60d9-11e7-9769-4b8ed33a3689.png)
+
+![artisan_detail](https://user-images.githubusercontent.com/9862115/27825323-59fece38-60d9-11e7-8606-00144eed13b6.png)
 
 ## License
 [MIT](LICENSE) © Jackie Do
