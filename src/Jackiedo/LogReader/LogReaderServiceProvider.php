@@ -1,6 +1,11 @@
 <?php namespace Jackiedo\LogReader;
 
 use Illuminate\Support\ServiceProvider;
+use Jackiedo\LogReader\Console\Commands\LogReaderDeleteCommand;
+use Jackiedo\LogReader\Console\Commands\LogReaderDetailCommand;
+use Jackiedo\LogReader\Console\Commands\LogReaderFileListCommand;
+use Jackiedo\LogReader\Console\Commands\LogReaderGetCommand;
+use Jackiedo\LogReader\Console\Commands\LogReaderRemoveFileCommand;
 
 /**
  * LogReaderServiceProvider
@@ -48,6 +53,8 @@ class LogReaderServiceProvider extends ServiceProvider
     public function register()
     {
         $this->app->bind('log-reader', 'Jackiedo\LogReader\LogReader');
+
+        $this->registerCommands();
     }
 
     /**
@@ -58,5 +65,25 @@ class LogReaderServiceProvider extends ServiceProvider
     public function provides()
     {
         return ['log-reader'];
+    }
+
+    /**
+     * Register commands
+     *
+     * @return void
+     */
+    protected function registerCommands()
+    {
+        $this->app->bind('command.log-reader.delete', 'Jackiedo\LogReader\Console\Commands\LogReaderDeleteCommand');
+        $this->app->bind('command.log-reader.detail', 'Jackiedo\LogReader\Console\Commands\LogReaderDetailCommand');
+        $this->app->bind('command.log-reader.file-list', 'Jackiedo\LogReader\Console\Commands\LogReaderFileListCommand');
+        $this->app->bind('command.log-reader.get', 'Jackiedo\LogReader\Console\Commands\LogReaderGetCommand');
+        $this->app->bind('command.log-reader.remove-file', 'Jackiedo\LogReader\Console\Commands\LogReaderRemoveFileCommand');
+
+        $this->commands('command.log-reader.delete');
+        $this->commands('command.log-reader.detail');
+        $this->commands('command.log-reader.file-list');
+        $this->commands('command.log-reader.get');
+        $this->commands('command.log-reader.remove-file');
     }
 }
