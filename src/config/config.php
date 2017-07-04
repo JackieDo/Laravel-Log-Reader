@@ -19,8 +19,7 @@ return array(
     |--------------------------------------------------------------------------
     |
     | This is default log filename that you want read from
-    | automatically. In Laravel 4.2, normally this name is
-    | 'laravel.log'. This string is compatible with format string in
+    | automatically. This string is compatible with format string in
     | sprintf() function in PHP, it's mean you can set '*.*' to read
     | all log files
     |

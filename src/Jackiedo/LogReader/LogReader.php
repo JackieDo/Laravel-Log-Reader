@@ -145,7 +145,7 @@ class LogReader
     }
 
     /**
-     * Sets the directory path to retrieve the log files from.
+     * Sets the path to directory contains the log files.
      *
      * @param  string  $path
      *
@@ -229,7 +229,7 @@ class LogReader
     }
 
     /**
-     * Retrieves the path property.
+     * Retrieves the path to directory contains the log files.
      *
      * @return string
      */
@@ -544,7 +544,7 @@ class LogReader
                 $basename = pathinfo($file, PATHINFO_BASENAME);
                 $filename = pathinfo($file, PATHINFO_FILENAME);
                 // $data[$basename] = preg_replace(['/\-\-*|\_\_*/', '/\s\s*/'], [' ', ' '], $filename);
-                $data[$basename] = $basename;
+                $data[$basename] = $file;
             }
         }
 

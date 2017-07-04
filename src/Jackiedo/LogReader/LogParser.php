@@ -130,7 +130,8 @@ class LogParser implements LogParserInterface
     {
         $content = trim($content);
 
-        $in = $line = $caught_at = null;
+        $in = $line = null;
+        $caught_at = $content;
 
         if (!empty($content) && preg_match("/.*".self::TRACE_IN_DIVIDER_PATTERN.".*/", $content)) {
             $split = array_map('trim', preg_split("/".self::TRACE_IN_DIVIDER_PATTERN."/", $content));

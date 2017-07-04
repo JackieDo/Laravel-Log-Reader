@@ -328,9 +328,7 @@ class LogEntry
         $output = [];
 
         foreach ($traces as $trace) {
-            if (trim($trace) != '{main} [] []') {
-                $output[] = new TraceEntry($this->parser, $trace);
-            }
+            $output[] = new TraceEntry($this->parser, $trace);
         }
 
         $this->stack_traces = new Collection($output);
