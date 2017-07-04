@@ -13,7 +13,7 @@
         "php": ">=5.4.0",
         "illuminate/cache": "4.2.*",
         "illuminate/config": "4.2.*",
-        "illuminate/console": "4.2",
+        "illuminate/console": "4.2.*",
         "illuminate/http": "4.2.*",
         "illuminate/pagination": "4.2.*",
         "illuminate/support": "4.2.*",
