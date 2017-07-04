@@ -70,7 +70,7 @@ class LogReader
     protected $level = null;
 
     /**
-     * The log file path.
+     * The path to directory storing the log files.
      *
      * @var string
      */
@@ -137,7 +137,7 @@ class LogReader
     }
 
     /**
-     * Sets the directory path to retrieve the log files from.
+     * Sets the path to directory storing the log files.
      *
      * @param  string  $path
      *
@@ -221,7 +221,7 @@ class LogReader
     }
 
     /**
-     * Retrieves the path property.
+     * Retrieves the path to directory storing the log files.
      *
      * @return string
      */
@@ -506,17 +506,17 @@ class LogReader
     public function getLogFilenameList($filename = null)
     {
         $data = [];
+
         if (empty($filename)) {
             $filename = '*.*';
         }
+
         $files = $this->getLogFileList($filename);
 
         if (is_array($files)) {
             foreach ($files as $file) {
                 $basename = pathinfo($file, PATHINFO_BASENAME);
-                $filename = pathinfo($file, PATHINFO_FILENAME);
-                // $data[$basename] = preg_replace(['/\-\-*|\_\_*/', '/\s\s*/'], [' ', ' '], $filename);
-                $data[$basename] = $basename;
+                $data[$basename] = $file;
             }
         }
 

@@ -12,7 +12,9 @@
     "require": {
         "illuminate/cache": "5.*",
         "illuminate/config": "5.*",
+        "illuminate/console": "5.*",
         "illuminate/http": "5.*",
+        "illuminate/pagination": "5.*",
         "illuminate/support": "5.*",
         "nesbot/carbon": "~1.20"
     },
