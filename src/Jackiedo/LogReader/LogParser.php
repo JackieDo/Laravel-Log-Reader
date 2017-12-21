@@ -18,7 +18,7 @@ class LogParser implements LogParserInterface
     const CONTEXT_EXCEPTION_PATTERN   = "exception\s\'{1}([^\']+)\'{1}";
     const CONTEXT_MESSAGE_PATTERN     = "(\swith\smessage\s\'{1}(.*)\'{1})?";
     const CONTEXT_IN_PATTERN          = "\sin\s(.*)\:(\d+)";
-    const STACK_TRACE_DIVIDER_PATTERN = "Stack trace\:";
+    const STACK_TRACE_DIVIDER_PATTERN = "(\[stacktrace\]|Stack trace\:)";
     const STACK_TRACE_INDEX_PATTERN   = "\#\d+\s";
     const TRACE_IN_DIVIDER_PATTERN    = "\:\s";
     const TRACE_FILE_PATTERN          = "(.*)\((\d+)\)";
