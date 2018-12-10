@@ -22,4 +22,15 @@ trait CreateCommandInstanceTrait
 
         parent::__construct();
     }
+
+    /**
+     * Execute the console command.
+     * This is alias of the method fire()
+     *
+     * @return mixed
+     */
+    public function handle()
+    {
+        return $this->fire();
+    }
 }
