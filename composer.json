@@ -16,7 +16,7 @@
         "illuminate/http": "5.*",
         "illuminate/pagination": "5.*",
         "illuminate/support": "5.*",
-        "nesbot/carbon": "~1.20"
+        "nesbot/carbon": "^2.0|~1.20"
     },
     "autoload": {
         "psr-4": {
