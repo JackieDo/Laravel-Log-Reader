@@ -23,5 +23,15 @@
             "Jackiedo\\LogReader\\": "src/Jackiedo/LogReader"
         }
     },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Jackiedo\\LogReader\\LogReaderServiceProvider"
+            ],
+            "aliases": {
+                "LogReader": "Jackiedo\\LogReader\\Facades\\LogReader"
+            }
+        }
+    },
     "minimum-stability": "stable"
 }
