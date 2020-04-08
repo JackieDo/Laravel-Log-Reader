@@ -86,10 +86,11 @@ class LogParser implements LogParserInterface
 
         preg_match($pattern, $content, $matchs);
 
-        $exception = isset($matchs[1]) ? $matchs[1] : null;
-        $message   = isset($matchs[2]) ? $matchs[3] : $content;
-        $in        = isset($matchs[4]) ? $matchs[4] : null;
-        $line      = isset($matchs[5]) ? $matchs[5] : null;
+        $exception = isset($matchs[1]) ? $matchs[3] : null;
+        $message   = isset($matchs[6]) ? $matchs[6] : $content;
+        $message   = trim($message, "'");
+        $in        = isset($matchs[7]) ? $matchs[7] : null;
+        $line      = isset($matchs[8]) ? $matchs[8] : null;
 
         return compact('message', 'exception', 'in', 'line');
     }
