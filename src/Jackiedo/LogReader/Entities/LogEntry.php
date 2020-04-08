@@ -296,7 +296,7 @@ class LogEntry
     protected function setFilePath($path = null)
     {
         if ($path) {
-            $this->file_path = $path;
+            $this->file_path = realpath($path);
         }
     }
 
