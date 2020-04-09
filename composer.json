@@ -10,13 +10,13 @@
         }
     ],
     "require": {
-        "illuminate/cache": "5.*",
-        "illuminate/config": "5.*",
-        "illuminate/console": "5.*",
-        "illuminate/http": "5.*",
-        "illuminate/pagination": "5.*",
-        "illuminate/support": "5.*",
-        "nesbot/carbon": "~1.20 || ^2.0"
+        "illuminate/cache": "^6.0|5.*",
+        "illuminate/config": "^6.0|5.*",
+        "illuminate/console": "^6.0|5.*",
+        "illuminate/http": "^6.0|5.*",
+        "illuminate/pagination": "^6.0|5.*",
+        "illuminate/support": "^6.0|5.*",
+        "nesbot/carbon": "^2.0|~1.20"
     },
     "autoload": {
         "psr-4": {
