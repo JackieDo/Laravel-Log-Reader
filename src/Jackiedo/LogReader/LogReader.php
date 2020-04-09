@@ -128,6 +128,16 @@ class LogReader
         $this->levelable = new Levelable;
         $this->parser    = new LogParser;
 
+        $defaultParserClass = $this->config->get('log-reader.default_log_parser', null);
+
+        if (class_exists($defaultParserClass)) {
+            $logParser = new $defaultParserClass;
+
+            if ($logParser instanceof LogParserInterface) {
+                $this->parser = new $logParser;
+            }
+        }
+
         $this->setLogPath($this->config->get('log-reader.path', storage_path('logs')));
         $this->setLogFilename($this->config->get('log-reader.filename', 'laravel.log'));
         $this->setEnvironment($this->config->get('log-reader.environment'));
