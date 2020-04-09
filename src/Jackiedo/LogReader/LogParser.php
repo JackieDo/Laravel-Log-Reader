@@ -15,7 +15,7 @@ class LogParser implements LogParserInterface
     const LOG_DATE_PATTERN            = "\[(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})\]";
     const LOG_ENVIRONMENT_PATTERN     = "(\w+)";
     const LOG_LEVEL_PATTERN           = "([A-Z]+)";
-    const CONTEXT_EXCEPTION_PATTERN   = "((exception\s\'{1})?([^\s\']+)(\'{1}|\:)\s+)?";
+    const CONTEXT_EXCEPTION_PATTERN   = "((exception\s\')?([^\s\']+)(\'|\:)\s+)?";
     const CONTEXT_MESSAGE_PATTERN     = "(with\smessage\s)?(.*)?";
     const CONTEXT_IN_PATTERN          = "\sin\s(.*)\:(\d+)";
     const STACK_TRACE_DIVIDER_PATTERN = "(\[stacktrace\]|Stack trace\:)";
@@ -88,9 +88,11 @@ class LogParser implements LogParserInterface
 
         $exception = isset($matchs[1]) ? $matchs[3] : null;
         $message   = isset($matchs[6]) ? $matchs[6] : $content;
-        $message   = trim($message, "'");
         $in        = isset($matchs[7]) ? $matchs[7] : null;
         $line      = isset($matchs[8]) ? $matchs[8] : null;
+
+        // Strip quote chars from the beginning and end of message
+        $message = preg_match("/^\'(.*)\'$/ms", $message, $matchQuote) ? $matchQuote[1] : $message;
 
         return compact('message', 'exception', 'in', 'line');
     }

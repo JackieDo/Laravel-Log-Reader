@@ -74,6 +74,20 @@ return array(
     |
     */
 
-    'order_by_direction' => 'asc'
+    'order_by_direction' => 'asc',
+
+    /*
+    |--------------------------------------------------------------------------
+    | Default log parser
+    |--------------------------------------------------------------------------
+    |
+    | This is the default class used to parse log entries.
+    |
+    | If this setting is not set, the 'Jackiedo\LogReader\LogParser' class will
+    | be used.
+    |
+    */
+
+    'default_log_parser' => null
 
 );
