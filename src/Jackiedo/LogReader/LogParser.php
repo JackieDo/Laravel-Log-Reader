@@ -115,7 +115,7 @@ class LogParser implements LogParserInterface
 
         $traces = preg_split($pattern, $content);
 
-        if (empty($trace[0])) {
+        if (empty($traces[0])) {
             array_shift($traces);
         }
 
