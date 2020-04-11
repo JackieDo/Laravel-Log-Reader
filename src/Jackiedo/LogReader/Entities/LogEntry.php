@@ -309,9 +309,7 @@ class LogEntry
      */
     protected function setContext($context = null)
     {
-        if ($context) {
-            $this->context = new LogContext($this->parser, $context);
-        }
+        $this->context = new LogContext($this->parser, $context);
     }
 
     /**

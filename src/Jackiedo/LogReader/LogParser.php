@@ -15,9 +15,9 @@ class LogParser implements LogParserInterface
     const LOG_DATE_PATTERN            = "\[(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})\]";
     const LOG_ENVIRONMENT_PATTERN     = "(\w+)";
     const LOG_LEVEL_PATTERN           = "([A-Z]+)";
-    const CONTEXT_EXCEPTION_PATTERN   = "((exception\s\')?([^\s\']+)(\'|\:)\s+)?";
-    const CONTEXT_MESSAGE_PATTERN     = "(with\smessage\s)?(.*)?";
-    const CONTEXT_IN_PATTERN          = "\sin\s(.*)\:(\d+)";
+    const CONTEXT_MESSAGE_PATTERN     = "([^\{]*)?";
+    const CONTEXT_EXCEPTION_PATTERN   = "(\{\"exception\"\:\"\[object\]\s\(([^\s\(]+))?.*";
+    const CONTEXT_IN_PATTERN          = "\s(in|at)\s(.*)\:(\d+)\)?";
     const STACK_TRACE_DIVIDER_PATTERN = "(\[stacktrace\]|Stack trace\:)";
     const STACK_TRACE_INDEX_PATTERN   = "\#\d+\s";
     const TRACE_IN_DIVIDER_PATTERN    = "\:\s";
@@ -69,6 +69,9 @@ class LogParser implements LogParserInterface
         $context      = $parts[0];
         $stack_traces = (isset($parts[1])) ? $parts[1] : null;
 
+        // Delete the last unnecessary line of stack_traces
+        $stack_traces = preg_match("/^(.*)\"\}\s*$/ms", $stack_traces, $match) ? $match[1] : $stack_traces;
+
         return compact('context', 'stack_traces');
     }
 
@@ -82,17 +85,26 @@ class LogParser implements LogParserInterface
     public function parseLogContext($content)
     {
         $content = trim($content);
-        $pattern = "/^".self::CONTEXT_EXCEPTION_PATTERN.self::CONTEXT_MESSAGE_PATTERN.self::CONTEXT_IN_PATTERN."$/ms";
+        $pattern = "/^".self::CONTEXT_MESSAGE_PATTERN.self::CONTEXT_EXCEPTION_PATTERN.self::CONTEXT_IN_PATTERN."$/ms";
 
         preg_match($pattern, $content, $matchs);
 
-        $exception = isset($matchs[1]) ? $matchs[3] : null;
-        $message   = isset($matchs[6]) ? $matchs[6] : $content;
-        $in        = isset($matchs[7]) ? $matchs[7] : null;
-        $line      = isset($matchs[8]) ? $matchs[8] : null;
+        $message   = isset($matchs[1]) ? trim($matchs[1]) : trim($content);
+        $exception = isset($matchs[2]) ? trim($matchs[3]) : null;
+        $in        = isset($matchs[5]) ? trim($matchs[5]) : null;
+        $line      = isset($matchs[6]) ? trim($matchs[6]) : null;
 
-        // Strip quote chars from the beginning and end of message
-        $message = preg_match("/^\'(.*)\'$/ms", $message, $matchQuote) ? $matchQuote[1] : $message;
+        // if exception is not exist, it may be placed before message
+        if (! $exception) {
+            $pattern = "/^((exception\s\')?([^\s\']+)(\'|\:))?(\swith\smessage\s)?(.*)$/ms";
+
+            unset($matchs);
+            preg_match($pattern, $message, $matchs);
+
+            $exception = isset($matchs[1]) ? trim($matchs[3]) : null;
+            $message   = isset($matchs[6]) ? trim($matchs[6]) : trim($content);
+            $message   = preg_match("/^\'(.*)\'$/ms", $message, $trimmedQuote) ? $trimmedQuote[1] : $message;
+        }
 
         return compact('message', 'exception', 'in', 'line');
     }
@@ -115,7 +127,7 @@ class LogParser implements LogParserInterface
 
         $traces = preg_split($pattern, $content);
 
-        if (empty($trace[0])) {
+        if (empty($traces[0])) {
             array_shift($traces);
         }
 
@@ -139,7 +151,7 @@ class LogParser implements LogParserInterface
         if (!empty($content) && preg_match("/.*".self::TRACE_IN_DIVIDER_PATTERN.".*/", $content)) {
             $split = array_map('trim', preg_split("/".self::TRACE_IN_DIVIDER_PATTERN."/", $content));
 
-            $in   = trim($split[0]);
+            $in        = trim($split[0]);
             $caught_at = (isset($split[1])) ? $split[1] : null;
 
             if (preg_match("/^".self::TRACE_FILE_PATTERN."$/", $in, $matchs)) {

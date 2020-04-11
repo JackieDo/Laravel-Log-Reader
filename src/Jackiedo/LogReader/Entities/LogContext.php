@@ -91,7 +91,7 @@ class LogContext
         $parsed = $this->parser->parseLogContext($this->content);
 
         foreach ($parsed as $key => $value) {
-            $this->{$key} = $value;
+            $this->{$key} = str_replace('\\\\', '\\', $value);
         }
     }
 }
