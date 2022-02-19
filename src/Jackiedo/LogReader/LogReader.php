@@ -128,7 +128,7 @@ class LogReader
         $this->levelable = new Levelable;
         $this->parser    = new LogParser;
 
-        $defaultParserClass = $this->config->get('log-reader.default_log_parser', null);
+        $defaultParserClass = (string) $this->config->get('log-reader.default_log_parser', null);
 
         if (class_exists($defaultParserClass)) {
             $logParser = new $defaultParserClass;
