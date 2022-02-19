@@ -84,7 +84,7 @@ class TraceEntry
         $parsed = $this->parser->parseTraceEntry($this->content);
 
         foreach ($parsed as $key => $value) {
-            $this->{$key} = str_replace('\\\\', '\\', $value);
+            $this->{$key} = str_replace('\\\\', '\\', (string) $value);
         }
     }
 }
