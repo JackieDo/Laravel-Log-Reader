@@ -10,12 +10,12 @@
         }
     ],
     "require": {
-        "illuminate/cache": "^8.0|^7.0|^6.0|5.*",
-        "illuminate/config": "^8.0|^7.0|^6.0|5.*",
-        "illuminate/console": "^8.0|^7.0|^6.0|5.*",
-        "illuminate/http": "^8.0|^7.0|^6.0|5.*",
-        "illuminate/pagination": "^8.0|^7.0|^6.0|5.*",
-        "illuminate/support": "^8.0|^7.0|^6.0|5.*",
+        "illuminate/cache": "^9.0|^8.0|^7.0|^6.0|5.*",
+        "illuminate/config": "^9.0|^8.0|^7.0|^6.0|5.*",
+        "illuminate/console": "^9.0|^8.0|^7.0|^6.0|5.*",
+        "illuminate/http": "^9.0|^8.0|^7.0|^6.0|5.*",
+        "illuminate/pagination": "^9.0|^8.0|^7.0|^6.0|5.*",
+        "illuminate/support": "^9.0|^8.0|^7.0|^6.0|5.*",
         "nesbot/carbon": "^2.0|~1.20"
     },
     "autoload": {
