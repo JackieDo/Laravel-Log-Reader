@@ -1,4 +1,6 @@
-<?php namespace Jackiedo\LogReader\Entities;
+<?php
+
+namespace Jackiedo\LogReader\Entities;
 
 use Jackiedo\LogReader\Contracts\LogParser;
 
@@ -6,52 +8,52 @@ use Jackiedo\LogReader\Contracts\LogParser;
  * The TraceEntry class.
  *
  * @package Jackiedo\LogReader
+ *
  * @author Jackie Do <anhvudo@gmail.com>
  * @copyright 2017
- * @access public
  */
 class TraceEntry
 {
     /**
-     * Store information when the trace entry is being recorded
+     * Store information when the trace entry is being recorded.
      *
      * @var string
      */
     public $caught_at;
 
     /**
-     * Store information about where the trace entry is being recorded
+     * Store information about where the trace entry is being recorded.
      *
      * @var string
      */
     public $in;
 
     /**
-     * Store the line in file if location of the trace entry if path of file
+     * Store the line in file if location of the trace entry if path of file.
      *
      * @var string
      */
     public $line;
 
     /**
-     * Store instance of LogParser for parsing content of the trace entry
+     * Store instance of LogParser for parsing content of the trace entry.
      *
      * @var \Jackiedo\LogReader\LogParser
      */
     protected $parser;
 
     /**
-     * Store original trace content
+     * Store original trace content.
      *
      * @var string
      */
     protected $content;
 
     /**
-     * Create instance of trace entry
+     * Create instance of trace entry.
      *
-     * @param  object  $parser
-     * @param  string  $content
+     * @param object $parser
+     * @param string $content
      *
      * @return void
      */
@@ -64,7 +66,7 @@ class TraceEntry
     }
 
     /**
-     * Return content if the trace entry is used as string
+     * Return content if the trace entry is used as string.
      *
      * @return string
      */

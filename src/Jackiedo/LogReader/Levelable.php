@@ -1,4 +1,6 @@
-<?php namespace Jackiedo\LogReader;
+<?php
+
+namespace Jackiedo\LogReader;
 
 use Jackiedo\LogReader\Contracts\Levelable as LevelableInterface;
 
@@ -6,9 +8,9 @@ use Jackiedo\LogReader\Contracts\Levelable as LevelableInterface;
  * The Levelable class.
  *
  * @package Jackiedo\LogReader
+ *
  * @author Jackie Do <anhvudo@gmail.com>
  * @copyright 2017
- * @access public
  */
 class Levelable implements LevelableInterface
 {
@@ -29,7 +31,7 @@ class Levelable implements LevelableInterface
     ];
 
     /**
-     * Get log accepted levels
+     * Get log accepted levels.
      *
      * @return array
      */
@@ -39,10 +41,10 @@ class Levelable implements LevelableInterface
     }
 
     /**
-     * Filter logs by level
+     * Filter logs by level.
      *
-     * @param  string $level   Level need to check
-     * @param  array  $allowed Strict levels to filter
+     * @param string $level   Level need to check
+     * @param array  $allowed Strict levels to filter
      *
      * @return bool
      */
@@ -53,7 +55,8 @@ class Levelable implements LevelableInterface
         }
 
         if (is_array($allowed)) {
-            $merges = array_values(array_uintersect($this->levels, $allowed, "strcasecmp"));
+            $merges = array_values(array_uintersect($this->levels, $allowed, 'strcasecmp'));
+
             if (in_array(strtolower($level), $merges)) {
                 return true;
             }

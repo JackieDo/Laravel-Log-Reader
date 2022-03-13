@@ -1,4 +1,6 @@
-<?php namespace Jackiedo\LogReader;
+<?php
+
+namespace Jackiedo\LogReader;
 
 use Illuminate\Contracts\Cache\Repository as Cache;
 use Illuminate\Contracts\Config\Repository as Config;
@@ -8,48 +10,47 @@ use Illuminate\Support\Collection;
 use Jackiedo\LogReader\Contracts\LogParser as LogParserInterface;
 use Jackiedo\LogReader\Entities\LogEntry;
 use Jackiedo\LogReader\Exceptions\UnableToRetrieveLogFilesException;
-use Jackiedo\LogReader\Levelable;
 
 /**
  * The LogReader class.
  *
  * @package Jackiedo\LogReader
+ *
  * @author Jackie Do <anhvudo@gmail.com>
  * @copyright 2017
- * @access public
  */
 class LogReader
 {
     /**
-     * Store instance of Cache Repository for caching
+     * Store instance of Cache Repository for caching.
      *
      * @var \Illuminate\Cache\Repository
      */
     protected $cache;
 
     /**
-     * Store instance of Config Repository for working with config
+     * Store instance of Config Repository for working with config.
      *
      * @var \Illuminate\Config\Repository
      */
     protected $config;
 
     /**
-     * Store instance of Request for getting request input
+     * Store instance of Request for getting request input.
      *
      * @var \Illuminate\Http\Request
      */
     protected $request;
 
     /**
-     * Store instance of LogParser for parsing content of the log file
+     * Store instance of LogParser for parsing content of the log file.
      *
      * @var \Jackiedo\LogReader\LogParser
      */
     protected $parser;
 
     /**
-     * Store instance of Levelable to filter logs entry by level
+     * Store instance of Levelable to filter logs entry by level.
      *
      * @var \Jackiedo\LogReader\Levelable
      */
@@ -60,14 +61,14 @@ class LogReader
      *
      * @var string
      */
-    protected $environment = null;
+    protected $environment;
 
     /**
      * Stores the current level to sort the log entries.
      *
      * @var null|array
      */
-    protected $level = null;
+    protected $level;
 
     /**
      * The path to directory storing the log files.
@@ -114,9 +115,9 @@ class LogReader
     /**
      * Construct a new instance and set attributes.
      *
-     * @param  object  $cache
-     * @param  object  $config
-     * @param  object  $request
+     * @param object $cache
+     * @param object $config
+     * @param object $request
      *
      * @return void
      */
@@ -149,7 +150,7 @@ class LogReader
     /**
      * Sets the path to directory storing the log files.
      *
-     * @param  string  $path
+     * @param string $path
      *
      * @return void
      */
@@ -159,9 +160,9 @@ class LogReader
     }
 
     /**
-     * Setting the parser for structural analysis
+     * Setting the parser for structural analysis.
      *
-     * @param  object $parser
+     * @param object $parser
      *
      * @return void
      */
@@ -171,7 +172,7 @@ class LogReader
     }
 
     /**
-     * Get instance of Levelable
+     * Get instance of Levelable.
      *
      * @return \Jackiedo\LogReader\Levelable
      */
@@ -253,7 +254,7 @@ class LogReader
     /**
      * Sets the environment to sort the log entries by.
      *
-     * @param  string  $environment
+     * @param string $environment
      *
      * @return \Jackiedo\LogReader\LogReader
      */
@@ -267,7 +268,7 @@ class LogReader
     /**
      * Sets the level to sort the log entries by.
      *
-     * @param  mixed  $level
+     * @param mixed $level
      *
      * @return \Jackiedo\LogReader\LogReader
      */
@@ -289,7 +290,7 @@ class LogReader
     /**
      * Sets the filename to get log entries.
      *
-     * @param  string  $filename
+     * @param string $filename
      *
      * @return \Jackiedo\LogReader\LogReader
      */
@@ -325,8 +326,8 @@ class LogReader
     /**
      * Sets the direction to return the log entries in.
      *
-     * @param  string  $field
-     * @param  string  $direction
+     * @param string $field
+     * @param string $direction
      *
      * @return \Jackiedo\LogReader\LogReader
      */
@@ -343,7 +344,7 @@ class LogReader
      *
      * @throws \Jackiedo\LogReader\Exceptions\UnableToRetrieveLogFilesException
      *
-     * @return Collection
+     * @return \Illuminate\Support\Collection
      */
     public function get()
     {
@@ -351,8 +352,8 @@ class LogReader
 
         $files = $this->getLogFiles();
 
-        if (! is_array($files)) {
-            throw new UnableToRetrieveLogFilesException('Unable to retrieve files from path: '.$this->getLogPath());
+        if (!is_array($files)) {
+            throw new UnableToRetrieveLogFilesException('Unable to retrieve files from path: ' . $this->getLogPath());
         }
 
         foreach ($files as $log) {
@@ -368,9 +369,7 @@ class LogReader
              */
             $parsedLog = $this->parseLog($log['contents'], $this->getEnvironment(), $this->getLevel());
 
-            /*
-             * Create a new LogEntry object for each parsed log entry
-             */
+            // Create a new LogEntry object for each parsed log entry
             foreach ($parsedLog as $entry) {
                 $newEntry = new LogEntry($this->parser, $this->cache, $entry);
 
@@ -405,9 +404,9 @@ class LogReader
     /**
      * Finds a logged error by it's ID.
      *
-     * @param  string  $id
+     * @param string $id
      *
-     * @return mixed|null
+     * @return mixed
      */
     public function find($id = '')
     {
@@ -490,9 +489,9 @@ class LogReader
     /**
      * Paginates the returned log entries.
      *
-     * @param  int    $perPage
-     * @param  int    $currentPage
-     * @param  array  $options  [path => '', query => [], fragment => '', pageName => '']
+     * @param int   $perPage
+     * @param int   $currentPage
+     * @param array $options     [path => '', query => [], fragment => '', pageName => '']
      *
      * @return mixed
      */
@@ -509,7 +508,7 @@ class LogReader
     /**
      * Returns an array of log filenames.
      *
-     * @param  null|string  $filename
+     * @param null|string $filename
      *
      * @return array
      */
@@ -537,7 +536,7 @@ class LogReader
      * Sets the currentLogPath property to
      * the specified path.
      *
-     * @param  string  $path
+     * @param string $path
      *
      * @return void
      */
@@ -549,7 +548,7 @@ class LogReader
     /**
      * Sets the log filename to retrieve the logs data from.
      *
-     * @param  string  $filename
+     * @param string $filename
      *
      * @return void
      */
@@ -565,7 +564,7 @@ class LogReader
     /**
      * Sets the orderByField property to the specified field.
      *
-     * @param  string  $field
+     * @param string $field
      *
      * @return void
      */
@@ -578,7 +577,7 @@ class LogReader
             'date',
             'level',
             'environment',
-            'file_path'
+            'file_path',
         ];
 
         if (in_array($field, $acceptedFields)) {
@@ -589,7 +588,7 @@ class LogReader
     /**
      * Sets the orderByDirection property to the specified direction.
      *
-     * @param  string  $direction
+     * @param string $direction
      *
      * @return void
      */
@@ -597,7 +596,7 @@ class LogReader
     {
         $direction = strtolower($direction);
 
-        if ($direction == 'desc' || $direction == 'asc') {
+        if ('desc' == $direction || 'asc' == $direction) {
             $this->orderByDirection = $direction;
         }
     }
@@ -605,7 +604,7 @@ class LogReader
     /**
      * Sets the environment property to the specified environment.
      *
-     * @param  string  $environment
+     * @param string $environment
      *
      * @return void
      */
@@ -617,7 +616,7 @@ class LogReader
     /**
      * Sets the level property to the specified level.
      *
-     * @param  array  $level
+     * @param array $level
      *
      * @return void
      */
@@ -631,7 +630,7 @@ class LogReader
     /**
      * Sets the includeRead property.
      *
-     * @param  bool  $bool
+     * @param bool $bool
      *
      * @return void
      */
@@ -644,9 +643,9 @@ class LogReader
      * Modifies and returns the collection result if modifiers are set
      * such as an orderBy.
      *
-     * @param  Collection  $collection
+     * @param \Illuminate\Support\Collection $collection
      *
-     * @return Collection
+     * @return \Illuminate\Support\Collection
      */
     protected function postCollectionModifiers(Collection $collection)
     {
@@ -654,17 +653,15 @@ class LogReader
             $field = $this->getOrderByField();
             $desc  = false;
 
-            if ($this->getOrderByDirection() === 'desc') {
+            if ('desc' === $this->getOrderByDirection()) {
                 $desc = true;
             }
 
-            $sorted = $collection->sortBy(function ($entry) use ($field) {
+            return $collection->sortBy(function ($entry) use ($field) {
                 if (property_exists($entry, $field)) {
                     return $entry->{$field};
                 }
             }, SORT_NATURAL, $desc);
-
-            return $sorted;
         }
 
         return $collection;
@@ -673,8 +670,8 @@ class LogReader
     /**
      * Returns the current page from the current input. Used for pagination.
      *
-     * @param  int    $currentPage
-     * @param  array  $options  [path => '', query => [], fragment => '', pageName => '']
+     * @param int   $currentPage
+     * @param array $options     An array with structure [path => '', query => [], fragment => '', pageName => '']
      *
      * @return int
      */
@@ -698,9 +695,9 @@ class LogReader
     /**
      * Parses the content of the file separating the errors into a single array.
      *
-     * @param  string  $content
-     * @param  string  $allowedEnvironment
-     * @param  array   $allowedLevel
+     * @param string $content
+     * @param string $allowedEnvironment
+     * @param array  $allowedLevel
      *
      * @return array
      */
@@ -724,10 +721,10 @@ class LogReader
                 $parsed_dateSet[$key]  = $parsed_dateSet[$key-1];
                 $parsed_envSet[$key]   = $parsed_envSet[$key-1];
                 $parsed_levelSet[$key] = $parsed_levelSet[$key-1];
-                $header                = str_replace("Next", $parsed_headerSet[$key-1], $header);
+                $header                = str_replace('Next', $parsed_headerSet[$key-1], $header);
             }
 
-            $newContent .= $header.' '.$parsed_bodySet[$key];
+            $newContent .= $header . ' ' . $parsed_bodySet[$key];
 
             if ((empty($allowedEnvironment) || $allowedEnvironment == $parsed_envSet[$key]) && $this->levelable->filter($parsed_levelSet[$key], $allowedLevel)) {
                 $log[] = [
@@ -736,7 +733,7 @@ class LogReader
                     'date'        => $parsed_dateSet[$key],
                     'file_path'   => $this->getCurrentLogPath(),
                     'header'      => $header,
-                    'body'        => $parsed_bodySet[$key]
+                    'body'        => $parsed_bodySet[$key],
                 ];
             }
         }
@@ -765,7 +762,7 @@ class LogReader
             foreach ($files as $file) {
                 $data[$count]['contents'] = file_get_contents($file);
                 $data[$count]['path'] = $file;
-                $count++;
+                ++$count;
             }
 
             return $data;
@@ -777,24 +774,19 @@ class LogReader
     /**
      * Returns an array of log file paths.
      *
-     * @param  null|string  $forceName
+     * @param null|string $forceName
      *
-     * @return bool|array
+     * @return array|bool
      */
     protected function getLogFileList($forceName = null)
     {
         $path = $this->getLogPath();
 
         if (is_dir($path)) {
-
-            /*
-             * Matches files in the log directory with the special name'
-             */
+            // Matches files in the log directory with the special name'
             $logPath = sprintf('%s%s%s', $path, DIRECTORY_SEPARATOR, $this->getLogFilename());
 
-            /*
-             * Force matches all files in the log directory'
-             */
+            // Force matches all files in the log directory'
             if (!is_null($forceName)) {
                 $logPath = sprintf('%s%s%s', $path, DIRECTORY_SEPARATOR, $forceName);
             }

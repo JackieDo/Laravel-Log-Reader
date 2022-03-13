@@ -1,4 +1,6 @@
-<?php namespace Jackiedo\LogReader\Console\Commands;
+<?php
+
+namespace Jackiedo\LogReader\Console\Commands;
 
 use Illuminate\Console\Command;
 use Jackiedo\LogReader\Console\Traits\CreateCommandInstanceTrait;
@@ -8,7 +10,8 @@ use Symfony\Component\Console\Input\InputOption;
 
 class LogReaderDeleteCommand extends Command
 {
-    use CreateCommandInstanceTrait, SetLogReaderParamTrait;
+    use CreateCommandInstanceTrait;
+    use SetLogReaderParamTrait;
 
     /**
      * The console command name.
@@ -33,14 +36,14 @@ class LogReaderDeleteCommand extends Command
     {
         $this->setLogReaderParam();
 
-        if (! empty($this->argument('id'))) {
+        if (!empty($this->argument('id'))) {
             $this->reader->find($this->argument('id'))->delete();
 
-            $this->info("You deleted one entry successfully");
+            $this->info('You deleted one entry successfully');
         } else {
             $deleted = $this->reader->delete();
 
-            $this->info("You deleted ".$deleted." ".(($deleted > 1) ? 'entries' : 'entry')." successfully");
+            $this->info('You deleted ' . $deleted . ' ' . (($deleted > 1) ? 'entries' : 'entry') . ' successfully');
         }
     }
 
@@ -51,9 +54,9 @@ class LogReaderDeleteCommand extends Command
      */
     protected function getArguments()
     {
-        return array(
-            array('id', InputArgument::OPTIONAL, 'The unique ID of the log entry.'),
-        );
+        return [
+            ['id', InputArgument::OPTIONAL, 'The unique ID of the log entry.'],
+        ];
     }
 
     /**
@@ -63,11 +66,10 @@ class LogReaderDeleteCommand extends Command
      */
     protected function getOptions()
     {
-        return array(
-            array('log-path', null, InputOption::VALUE_OPTIONAL, 'The path to directory storing the log files.', $this->reader->getLogPath()),
-            array('file-name', null, InputOption::VALUE_OPTIONAL, 'The pattern of the log filenames.', $this->reader->getLogFilename()),
-            array('with-read', 'r', InputOption::VALUE_NONE, 'Include log entries that marked as read in request.'),
-        );
+        return [
+            ['log-path', null, InputOption::VALUE_OPTIONAL, 'The path to directory storing the log files.', $this->reader->getLogPath()],
+            ['file-name', null, InputOption::VALUE_OPTIONAL, 'The pattern of the log filenames.', $this->reader->getLogFilename()],
+            ['with-read', 'r', InputOption::VALUE_NONE, 'Include log entries that marked as read in request.'],
+        ];
     }
-
 }
