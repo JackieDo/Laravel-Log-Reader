@@ -1,7 +1,6 @@
 <?php
 
-return array(
-
+return [
     /*
     |--------------------------------------------------------------------------
     | Path to directory for storing log files
@@ -88,6 +87,5 @@ return array(
     |
     */
 
-    'default_log_parser' => null
-
-);
+    'default_log_parser' => null,
+];

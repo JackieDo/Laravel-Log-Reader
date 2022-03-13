@@ -1,4 +1,6 @@
-<?php namespace Jackiedo\LogReader\Console\Traits;
+<?php
+
+namespace Jackiedo\LogReader\Console\Traits;
 
 use Jackiedo\LogReader\LogReader;
 
@@ -14,6 +16,8 @@ trait CreateCommandInstanceTrait
     /**
      * Create a new command instance.
      *
+     * @param \Jackiedo\LogReader\LogReader $reader
+     *
      * @return void
      */
     public function __construct(LogReader $reader)
@@ -25,7 +29,7 @@ trait CreateCommandInstanceTrait
 
     /**
      * Execute the console command.
-     * This is alias of the method fire()
+     * This is alias of the method fire().
      *
      * @return mixed
      */

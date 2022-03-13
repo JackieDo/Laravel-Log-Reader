@@ -1,14 +1,16 @@
-<?php namespace Jackiedo\LogReader\Console\Commands;
+<?php
+
+namespace Jackiedo\LogReader\Console\Commands;
 
 use Illuminate\Console\Command;
 use Jackiedo\LogReader\Console\Traits\CreateCommandInstanceTrait;
 use Jackiedo\LogReader\Console\Traits\SetLogReaderParamTrait;
-use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
 
 class LogReaderRemoveFileCommand extends Command
 {
-    use CreateCommandInstanceTrait, SetLogReaderParamTrait;
+    use CreateCommandInstanceTrait;
+    use SetLogReaderParamTrait;
 
     /**
      * The console command name.
@@ -35,7 +37,7 @@ class LogReaderRemoveFileCommand extends Command
 
         $removed = $this->reader->removeLogFile();
 
-        $this->info("You deleted ".$removed." log ".(($removed > 1) ? 'files' : 'file')." successfully.");
+        $this->info('You deleted ' . $removed . ' log ' . (($removed > 1) ? 'files' : 'file') . ' successfully.');
     }
 
     /**
@@ -45,10 +47,9 @@ class LogReaderRemoveFileCommand extends Command
      */
     protected function getOptions()
     {
-        return array(
-            array('log-path', null, InputOption::VALUE_OPTIONAL, 'The path to directory storing the log files.', $this->reader->getLogPath()),
-            array('file-name', null, InputOption::VALUE_OPTIONAL, 'The pattern of the log filenames.', $this->reader->getLogFilename()),
-        );
+        return [
+            ['log-path', null, InputOption::VALUE_OPTIONAL, 'The path to directory storing the log files.', $this->reader->getLogPath()],
+            ['file-name', null, InputOption::VALUE_OPTIONAL, 'The pattern of the log filenames.', $this->reader->getLogFilename()],
+        ];
     }
-
 }

@@ -1,4 +1,6 @@
-<?php namespace Jackiedo\LogReader\Entities;
+<?php
+
+namespace Jackiedo\LogReader\Entities;
 
 use Carbon\Carbon;
 use Illuminate\Contracts\Cache\Repository as Cache;
@@ -9,9 +11,9 @@ use Jackiedo\LogReader\Contracts\LogParser;
  * The LogEntry class.
  *
  * @package Jackiedo\LogReader
+ *
  * @author Jackie Do <anhvudo@gmail.com>
  * @copyright 2017
- * @access public
  */
 class LogEntry
 {
@@ -60,14 +62,14 @@ class LogEntry
     /**
      * The stack trace entries of the log entry.
      * Each trace entry is an instance of
-     * \Jackiedo\LogReader\Entities\TraceEntry
+     * \Jackiedo\LogReader\Entities\TraceEntry.
      *
      * @var \Illuminate\Support\Collection
      */
     public $stack_traces;
 
     /**
-     * Store instance of LogParser for parsing content of the log entry
+     * Store instance of LogParser for parsing content of the log entry.
      *
      * @var \Jackiedo\LogReader\LogParser
      */
@@ -90,9 +92,9 @@ class LogEntry
     /**
      * Constructs a new entry object with the specified attributes.
      *
-     * @param  object  $parser
-     * @param  object  $cache
-     * @param  array   $attributes
+     * @param object $parser
+     * @param object $cache
+     * @param array  $attributes
      *
      * @return void
      */
@@ -106,9 +108,9 @@ class LogEntry
     }
 
     /**
-     * Magic accessor
+     * Magic accessor.
      *
-     * @param  string  $property
+     * @param string $property
      *
      * @return mixed
      */
@@ -118,9 +120,9 @@ class LogEntry
     }
 
     /**
-     * Retrieves an attribute of the log entry
+     * Retrieves an attribute of the log entry.
      *
-     * @param  $key
+     * @param $key
      *
      * @return mixed
      */
@@ -132,9 +134,9 @@ class LogEntry
     }
 
     /**
-     * Get original value of an property of the log entry
+     * Get original value of an property of the log entry.
      *
-     * @param  string  $key
+     * @param string $key
      *
      * @return void
      */
@@ -207,7 +209,7 @@ class LogEntry
      */
     public function getRawContent()
     {
-        return $this->attributes['header'].' '.$this->attributes['body'];
+        return $this->attributes['header'] . ' ' . $this->attributes['body'];
     }
 
     /**
@@ -229,13 +231,13 @@ class LogEntry
      */
     protected function makeCacheKey()
     {
-        return 'log'.$this->id;
+        return 'log' . $this->id;
     }
 
     /**
      * Sets the log entry's ID property.
      *
-     * @param  $id
+     * @param $id
      *
      * @return void
      */
@@ -247,7 +249,7 @@ class LogEntry
     /**
      * Sets the log entry's date property.
      *
-     * @param  string  $date
+     * @param string $date
      *
      * @return void
      */
@@ -261,7 +263,7 @@ class LogEntry
     /**
      * Sets the log entry's environment property.
      *
-     * @param  string  $environment
+     * @param string $environment
      *
      * @return void
      */
@@ -275,7 +277,7 @@ class LogEntry
     /**
      * Sets the log entry's level property.
      *
-     * @param  string  $level
+     * @param string $level
      *
      * @return void
      */
@@ -289,7 +291,7 @@ class LogEntry
     /**
      * Sets the log entry's file_path property.
      *
-     * @param  string  $path
+     * @param string $path
      *
      * @return void
      */
@@ -303,7 +305,7 @@ class LogEntry
     /**
      * Sets the log entry's context property.
      *
-     * @param  string  $context
+     * @param string $context
      *
      * @return void
      */
@@ -315,7 +317,7 @@ class LogEntry
     /**
      * Sets the log entry's level property.
      *
-     * @param  $stackTraces
+     * @param $stackTraces
      *
      * @return void
      */
@@ -335,7 +337,7 @@ class LogEntry
     /**
      * Sets the attributes property.
      *
-     * @param  array  $attributes
+     * @param array $attributes
      *
      * @return void
      */
@@ -368,29 +370,29 @@ class LogEntry
     }
 
     /**
-     * Convert the property strings to be compatible with older version
+     * Convert the property strings to be compatible with older version.
      *
-     * @param  string $property
+     * @param string $property
      *
      * @return string
      */
     protected function reFormatForCompatibility($property)
     {
         switch (true) {
-            case ($property == 'header'):
+            case 'header' == $property:
                 $property = 'context';
                 break;
 
-            case ($property == 'stack'):
+            case 'stack' == $property:
                 $property = 'stack_traces';
                 break;
 
-            case ($property == 'filePath'):
+            case 'filePath' == $property:
                 $property = 'file_path';
                 break;
 
             default:
-                # code...
+                // code...
                 break;
         }
 

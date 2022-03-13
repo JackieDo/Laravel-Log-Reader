@@ -1,4 +1,6 @@
-<?php namespace Jackiedo\LogReader;
+<?php
+
+namespace Jackiedo\LogReader;
 
 use Jackiedo\LogReader\Contracts\LogParser as LogParserInterface;
 
@@ -6,35 +8,35 @@ use Jackiedo\LogReader\Contracts\LogParser as LogParserInterface;
  * The LogParser class.
  *
  * @package Jackiedo\LogReader
+ *
  * @author Jackie Do <anhvudo@gmail.com>
  * @copyright 2017
- * @access public
  */
 class LogParser implements LogParserInterface
 {
-    const LOG_DATE_PATTERN            = "\[(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})\]";
-    const LOG_ENVIRONMENT_PATTERN     = "(\w+)";
-    const LOG_LEVEL_PATTERN           = "([A-Z]+)";
-    const CONTEXT_MESSAGE_PATTERN     = "([^\{]*)?";
-    const CONTEXT_EXCEPTION_PATTERN   = "(\{\"exception\"\:\"\[object\]\s\(([^\s\(]+))?.*";
-    const CONTEXT_IN_PATTERN          = "\s(in|at)\s(.*)\:(\d+)\)?";
-    const STACK_TRACE_DIVIDER_PATTERN = "(\[stacktrace\]|Stack trace\:)";
-    const STACK_TRACE_INDEX_PATTERN   = "\#\d+\s";
-    const TRACE_IN_DIVIDER_PATTERN    = "\:\s";
-    const TRACE_FILE_PATTERN          = "(.*)\((\d+)\)";
+    public const LOG_DATE_PATTERN            = '\\[(\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2})\\]';
+    public const LOG_ENVIRONMENT_PATTERN     = '(\\w+)';
+    public const LOG_LEVEL_PATTERN           = '([A-Z]+)';
+    public const CONTEXT_MESSAGE_PATTERN     = '([^\\{]*)?';
+    public const CONTEXT_EXCEPTION_PATTERN   = '(\\{"exception"\\:"\\[object\\]\\s\\(([^\\s\\(]+))?.*';
+    public const CONTEXT_IN_PATTERN          = '\\s(in|at)\\s(.*)\\:(\\d+)\\)?';
+    public const STACK_TRACE_DIVIDER_PATTERN = '(\\[stacktrace\\]|Stack trace\\:)';
+    public const STACK_TRACE_INDEX_PATTERN   = '\\#\\d+\\s';
+    public const TRACE_IN_DIVIDER_PATTERN    = '\\:\\s';
+    public const TRACE_FILE_PATTERN          = '(.*)\\((\\d+)\\)';
 
     /**
-     * Parses content of the log file into an array containing the necessary information
+     * Parses content of the log file into an array containing the necessary information.
      *
-     * @param  string  $content
+     * @param string $content
      *
-     * @return array   Structure is ['headerSet' => [], 'dateSet' => [], 'envSet' => [], 'levelSet' => [], 'bodySet' => []]
+     * @return array Structure is ['headerSet' => [], 'dateSet' => [], 'envSet' => [], 'levelSet' => [], 'bodySet' => []]
      */
     public function parseLogContent($content)
     {
         $headerSet = $dateSet = $envSet = $levelSet = $bodySet = [];
 
-        $pattern = "/^" .self::LOG_DATE_PATTERN. "\s" .self::LOG_ENVIRONMENT_PATTERN. "\." .self::LOG_LEVEL_PATTERN. "\:|Next/m";
+        $pattern = '/^' . self::LOG_DATE_PATTERN . '\\s' . self::LOG_ENVIRONMENT_PATTERN . '\\.' . self::LOG_LEVEL_PATTERN . '\\:|Next/m';
 
         preg_match_all($pattern, $content, $matchs);
 
@@ -56,36 +58,36 @@ class LogParser implements LogParserInterface
     }
 
     /**
-     * Parses the body part of the log entry into an array containing the necessary information
+     * Parses the body part of the log entry into an array containing the necessary information.
      *
-     * @param  string  $content
+     * @param string $content
      *
-     * @return array   Structure is ['context' => '', 'stack_traces' => '']
+     * @return array Structure is ['context' => '', 'stack_traces' => '']
      */
     public function parseLogBody($content)
     {
-        $pattern      = "/^".self::STACK_TRACE_DIVIDER_PATTERN."/m";
+        $pattern      = '/^' . self::STACK_TRACE_DIVIDER_PATTERN . '/m';
         $parts        = array_map('ltrim', preg_split($pattern, $content));
         $context      = $parts[0];
         $stack_traces = (isset($parts[1])) ? $parts[1] : null;
 
         // Delete the last unnecessary line of stack_traces
-        $stack_traces = preg_match("/^(.*)\"\}\s*$/ms", $stack_traces, $match) ? $match[1] : $stack_traces;
+        $stack_traces = preg_match('/^(.*)"\\}\\s*$/ms', $stack_traces, $match) ? $match[1] : $stack_traces;
 
         return compact('context', 'stack_traces');
     }
 
     /**
-     * Parses the context part of the log entry into an array containing the necessary information
+     * Parses the context part of the log entry into an array containing the necessary information.
      *
-     * @param  string  $content
+     * @param string $content
      *
-     * @return array   Structure is ['message' => '', 'exception' => '', 'in' => '', 'line' => '']
+     * @return array Structure is ['message' => '', 'exception' => '', 'in' => '', 'line' => '']
      */
     public function parseLogContext($content)
     {
         $content = trim($content);
-        $pattern = "/^".self::CONTEXT_MESSAGE_PATTERN.self::CONTEXT_EXCEPTION_PATTERN.self::CONTEXT_IN_PATTERN."$/ms";
+        $pattern = '/^' . self::CONTEXT_MESSAGE_PATTERN . self::CONTEXT_EXCEPTION_PATTERN . self::CONTEXT_IN_PATTERN . '$/ms';
 
         preg_match($pattern, $content, $matchs);
 
@@ -95,31 +97,31 @@ class LogParser implements LogParserInterface
         $line      = isset($matchs[6]) ? trim($matchs[6]) : null;
 
         // if exception is not exist, it may be placed before message
-        if (! $exception) {
-            $pattern = "/^((exception\s\')?([^\s\']+)(\'|\:))?(\swith\smessage\s)?(.*)$/ms";
+        if (!$exception) {
+            $pattern = "/^((exception\\s\\')?([^\\s\\']+)(\\'|\\:))?(\\swith\\smessage\\s)?(.*)$/ms";
 
             unset($matchs);
             preg_match($pattern, $message, $matchs);
 
             $exception = isset($matchs[1]) ? trim($matchs[3]) : null;
             $message   = isset($matchs[6]) ? trim($matchs[6]) : trim($content);
-            $message   = preg_match("/^\'(.*)\'$/ms", $message, $trimmedQuote) ? $trimmedQuote[1] : $message;
+            $message   = preg_match("/^\\'(.*)\\'$/ms", $message, $trimmedQuote) ? $trimmedQuote[1] : $message;
         }
 
         return compact('message', 'exception', 'in', 'line');
     }
 
     /**
-     * Parses the stack trace part of the log entry into an array containing the necessary information
+     * Parses the stack trace part of the log entry into an array containing the necessary information.
      *
-     * @param  string  $content
+     * @param string $content
      *
      * @return array
      */
     public function parseStackTrace($content)
     {
         $content = trim($content);
-        $pattern = "/^".self::STACK_TRACE_INDEX_PATTERN."/m";
+        $pattern = '/^' . self::STACK_TRACE_INDEX_PATTERN . '/m';
 
         if (empty($content)) {
             return [];
@@ -135,11 +137,11 @@ class LogParser implements LogParserInterface
     }
 
     /**
-     * Parses the content of the trace entry into an array containing the necessary information
+     * Parses the content of the trace entry into an array containing the necessary information.
      *
-     * @param  string  $content
+     * @param string $content
      *
-     * @return array   Structure is ['caught_at' => '', 'in' => '', 'line' => '']
+     * @return array Structure is ['caught_at' => '', 'in' => '', 'line' => '']
      */
     public function parseTraceEntry($content)
     {
@@ -148,13 +150,13 @@ class LogParser implements LogParserInterface
         $caught_at = $content;
         $in = $line = null;
 
-        if (!empty($content) && preg_match("/.*".self::TRACE_IN_DIVIDER_PATTERN.".*/", $content)) {
-            $split = array_map('trim', preg_split("/".self::TRACE_IN_DIVIDER_PATTERN."/", $content));
+        if (!empty($content) && preg_match('/.*' . self::TRACE_IN_DIVIDER_PATTERN . '.*/', $content)) {
+            $split = array_map('trim', preg_split('/' . self::TRACE_IN_DIVIDER_PATTERN . '/', $content));
 
             $in        = trim($split[0]);
             $caught_at = (isset($split[1])) ? $split[1] : null;
 
-            if (preg_match("/^".self::TRACE_FILE_PATTERN."$/", $in, $matchs)) {
+            if (preg_match('/^' . self::TRACE_FILE_PATTERN . '$/', $in, $matchs)) {
                 $in   = trim($matchs[1]);
                 $line = $matchs[2];
             }

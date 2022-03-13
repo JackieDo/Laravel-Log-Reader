@@ -1,20 +1,22 @@
-<?php namespace Jackiedo\LogReader\Console\Traits;
+<?php
+
+namespace Jackiedo\LogReader\Console\Traits;
 
 trait SetLogReaderParamTrait
 {
     /**
-     * Set parameters for LogReader
+     * Set parameters for LogReader.
      *
      * @return void
      */
     protected function setLogReaderParam()
     {
-        if (array_key_exists('log-path', $this->option()) && ! empty($this->option('log-path'))) {
+        if (array_key_exists('log-path', $this->option()) && !empty($this->option('log-path'))) {
             $this->reader->setLogPath($this->option('log-path'));
         }
 
-        if (array_key_exists('order-by', $this->option()) && ! empty($this->option('order-by'))) {
-            if (array_key_exists('order-direction', $this->option()) && ! empty($this->option('order-direction'))) {
+        if (array_key_exists('order-by', $this->option()) && !empty($this->option('order-by'))) {
+            if (array_key_exists('order-direction', $this->option()) && !empty($this->option('order-direction'))) {
                 $this->reader->orderBy($this->option('order-by'), $this->option('order-direction'));
             } else {
                 $this->reader->orderBy($this->option('order-by'));
