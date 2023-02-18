@@ -342,9 +342,9 @@ class LogReader
     /**
      * Returns a Laravel collection of log entries.
      *
-     * @throws \Jackiedo\LogReader\Exceptions\UnableToRetrieveLogFilesException
-     *
      * @return \Illuminate\Support\Collection
+     *
+     * @throws \Jackiedo\LogReader\Exceptions\UnableToRetrieveLogFilesException
      */
     public function get()
     {
