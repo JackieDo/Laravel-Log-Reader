@@ -791,7 +791,9 @@ class LogReader
                 $logPath = sprintf('%s%s%s', $path, DIRECTORY_SEPARATOR, $forceName);
             }
 
-            return glob($logPath, GLOB_BRACE);
+            $globFlags = defined('GLOB_BRACE') ? GLOB_BRACE : 0;
+
+            return glob($logPath, $globFlags);
         }
 
         return false;
